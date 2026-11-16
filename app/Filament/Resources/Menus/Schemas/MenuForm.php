@@ -28,9 +28,9 @@ class MenuForm
 
         Toggle::make('status')
         ->label('Aktif')
-        ->onValue('tersedia')
-        ->offValue('habis')
-        ->default('tersedia'),
+        ->formatStateUsing(fn ($state): bool => $state === 'tersedia')
+        ->dehydrateStateUsing(fn (bool $state): string => $state ? 'tersedia' : 'habis')
+        ->default(true),
 
         Repeater::make('reseps')
             ->relationship()

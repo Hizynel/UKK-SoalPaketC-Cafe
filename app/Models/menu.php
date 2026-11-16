@@ -23,4 +23,6 @@ class menu extends Model{
     public function getMarginAttribute(): float{
         return(float) $this->harga - $this->hpp;
     }
+    
+    
 }

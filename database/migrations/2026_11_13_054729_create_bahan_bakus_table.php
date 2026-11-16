@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('batas_minimun','10','2') -> default(0);
             $table->enum('satuan', ['g', 'ml', 'pcs']);
             $table->decimal('harga_terakhir','10','2') -> default(0);
-            $table->decimal('harga_diperbaharui','10','2') -> nullable();
+            $table->date('harga_diperbaharui') -> nullable();
             $table->timestamps();
             });
     }

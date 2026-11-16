@@ -28,6 +28,8 @@ class StockMasukResource extends Resource
 {
     protected static ?string $model = StockMasuk::class;
 
+    protected static ?string $pluralLabel = 'Stock Masuk';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'stock_masuk';

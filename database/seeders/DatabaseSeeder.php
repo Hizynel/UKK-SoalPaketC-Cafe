@@ -29,5 +29,7 @@ class DatabaseSeeder extends Seeder
             'password' => ('kasir123'),
             'role' => 'kasir'
         ]);
+
+        $this->call(BahanBakuSeeder::class);
     }
 }

@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'supplier' => [
+        'url' => env('SUPPLIER_URL'),
+        'api_key' => env('SUPPLIER_API_KEY'),
+    ],
 ];

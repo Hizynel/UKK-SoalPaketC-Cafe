@@ -19,6 +19,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\Support\HtmlString;
 
 class ManagerPanelProvider extends PanelProvider
 {
@@ -28,6 +29,11 @@ class ManagerPanelProvider extends PanelProvider
             ->default()
             ->id('manager')
             ->path('manager')
+            ->brandLogo(fn () => new HtmlString('
+                    <span class="text-4xl font-bold tracking-tight">
+                        Manajer Kafe <span style="color: #f59e0b;">Senja</span>
+                    </span>
+                '))
             ->login(Login::class)
             ->colors([
                 'primary' => Color::Amber,
