@@ -9,7 +9,7 @@ use App\Filament\Resources\Reseps\Pages\ViewResep;
 use App\Filament\Resources\Reseps\Schemas\ResepForm;
 use App\Filament\Resources\Reseps\Schemas\ResepInfolist;
 use App\Filament\Resources\Reseps\Tables\ResepsTable;
-use App\Models\Resep;
+use App\Models\resep;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

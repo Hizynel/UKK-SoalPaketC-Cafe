@@ -3,11 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[fillable(['nama_bahan', 'stock', 'batas_minimun', 'satuan'])]
+#[Fillable(['nama_bahan', 'stock', 'batas_minimun', 'satuan', 'harga_terakhir', 'harga_diperbaharui'])]
 class bahan_baku extends Model{
-public function resep(): HasMany{
+    public function resep(): HasMany{
         return $this->hasMany(Resep::class, 'id_bahan_baku');
+        }
+    public function stock(): HasMany{
+        return $this->hasMany(stock::class, 'id_bahan_baku');
     }
-}
+    public function menipis($query){
+        return $query->whereColumn('stock', '<=', 'batas_minimun');
+    }
+}   

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('id_menu')->constrained('menus');
             $table->foreignId('id_bahan_baku')->constrained('bahan_bakus');
             $table->decimal('takaran','10','2');
+            $table->timestamps();
         });
     }
 

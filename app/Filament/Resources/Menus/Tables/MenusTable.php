@@ -5,10 +5,9 @@ namespace App\Filament\Resources\Menus\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Table;
 
 class MenusTable
@@ -17,10 +16,29 @@ class MenusTable
     {
         return $table
             ->columns([
-                //
-            ])
-            ->filters([
-                TrashedFilter::make(),
+                TextColumn::make('nama_menu')
+                ->label('Nama Menu')
+                ->searchable()
+                ->sortable(),
+
+                TextColumn::make('kategori'),
+
+                TextColumn::make('harga')
+                ->money('IDR', locale: 'id'),
+
+                TextColumn::make('hpp')
+                ->label('HPP')
+                ->money('IDR', locale: 'id'),
+
+                TextColumn::make('margin')
+                ->money('IDR', locale: 'id')
+                ->color(fn ($state) => $state < 0 ? 'danger' : 'success'),
+                
+                IconColumn::make('status')
+                    ->label('Aktif')
+                    ->boolean()
+                    ->state(fn ($record): bool => $record->status === 'tersedia'),
+
             ])
             ->recordActions([
                 ViewAction::make(),
@@ -29,8 +47,6 @@ class MenusTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
                 ]),
             ]);
     }

@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('id_pesanan')->constrained('pesanans');
             $table->foreignId('id_menu')->constrained('menus');
-            $table->decimal('subtotal', 10, 2);
             $table->integer('jumlah');
+            $table->decimal('subtotal', 10, 2);
+            $table->timestamps();
         });
     }
 

@@ -9,7 +9,7 @@ use App\Filament\Resources\Menus\Pages\ViewMenu;
 use App\Filament\Resources\Menus\Schemas\MenuForm;
 use App\Filament\Resources\Menus\Schemas\MenuInfolist;
 use App\Filament\Resources\Menus\Tables\MenusTable;
-use App\Models\Menu;
+use App\Models\menu;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class MenuResource extends Resource
 {
-    protected static ?string $model = Menu::class;
+    protected static ?string $model = menu::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

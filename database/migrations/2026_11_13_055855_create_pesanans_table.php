@@ -19,8 +19,13 @@ return new class extends Migration
             $table->string('nama_pelanggan');
             $table->integer('nomor_meja');
             $table->string('kode_unik', 8)->unique();
-            $table->enum('status_pesanan', ['baru', 'diproses', 'selesai']);
+            $table->enum('status_pesanan', ['baru', 'diproses', 'selesai']) ->default('baru');
             $table->enum('metode_pesan', ['tunai', 'qris']);
+            $table->decimal('subtotal');
+            $table->decimal('service');
+            $table->decimal('pajak');
+            $table->decimal('total_harga');
+            $table->timestamps();
         });
     }
 

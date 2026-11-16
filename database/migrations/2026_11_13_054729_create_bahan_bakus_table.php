@@ -14,10 +14,13 @@ return new class extends Migration
         Schema::create('bahan_bakus', function (Blueprint $table) {
             $table->id();
             $table->string('nama_bahan');
-            $table->decimal('stock','10','2');
-            $table->decimal('batas_minimun','10','2');
-            $table->enum('satuan',['gram','ml','pcs'],'20');
-        });
+            $table->decimal('stock','10','2') -> default(0);
+            $table->decimal('batas_minimun','10','2') -> default(0);
+            $table->enum('satuan', ['g', 'ml', 'pcs']);
+            $table->decimal('harga_terakhir','10','2') -> default(0);
+            $table->decimal('harga_diperbaharui','10','2') -> nullable();
+            $table->timestamps();
+            });
     }
 
     /**

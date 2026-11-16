@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['id_kasir', 'id_pelanggan', 'tanggal_pesanan', 'nama_pelanggan','nomor_meja', 'kode_unik', 'status_pesanan', 'metode_pesan',])]
+#[Fillable(['id_kasir', 'id_pelanggan', 'tanggal_pesanan', 'nama_pelanggan','nomor_meja', 'kode_unik', 'status_pesanan', 'metode_pesan','subtotal', 'service', 'pajak','total_harga'])]
 class pesanan extends Model{
 
     protected function casts(): array{

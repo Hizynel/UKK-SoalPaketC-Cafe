@@ -23,5 +23,11 @@ class DatabaseSeeder extends Seeder
             'password' => ('manager123'),
             'role' => 'manajer'
         ]);
+        User::create([
+            'name' => 'Kasir Andi',
+            'nomer_telepon' => '081234567899',
+            'password' => ('kasir123'),
+            'role' => 'kasir'
+        ]);
     }
 }

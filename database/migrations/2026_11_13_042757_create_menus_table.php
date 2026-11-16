@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('nama_menu');
             $table->decimal('harga');
+            $table->string('kategori');
             $table->enum('status',['tersedia','habis']);
+            $table->timestamps();
         });
     }
 
