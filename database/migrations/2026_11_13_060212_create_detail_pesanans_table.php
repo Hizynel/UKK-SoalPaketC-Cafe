@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('detail_pesanans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_pesanan')->constrained('pesanans');
+            $table->foreignId('id_pesanan')->constrained('pesanans')->cascadeOnDelete();
             $table->foreignId('id_menu')->constrained('menus');
+            $table->string('nama_menu');
             $table->integer('jumlah');
-            $table->decimal('subtotal', 10, 2);
+            $table->decimal('harga_satuan', 12, 2);
+            $table->decimal('subtotal', 12, 2);
             $table->timestamps();
         });
     }

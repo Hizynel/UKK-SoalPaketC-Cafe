@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('nomer_telepon')->unique();
             $table->enum('role', ['kasir', 'manajer', 'pelanggan']);
+            $table->boolean('must_change_password')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

@@ -15,6 +15,7 @@ class MenusTable
     public static function configure(Table $table): Table
     {
         return $table
+        ->modifyQueryUsing(fn ($query) => $query->with('reseps.bahanBaku'))
             ->columns([
                 TextColumn::make('nama_menu')
                 ->label('Nama Menu')
@@ -38,6 +39,15 @@ class MenusTable
                     ->label('Aktif')
                     ->boolean()
                     ->state(fn ($record): bool => $record->status === 'tersedia'),
+
+                    TextColumn::make('status_stok')
+                    ->label('Stok')
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                    'Tersedia' => 'success',
+                    'Habis' => 'danger',
+                    default => 'gray',
+    }),
 
             ])
             ->recordActions([

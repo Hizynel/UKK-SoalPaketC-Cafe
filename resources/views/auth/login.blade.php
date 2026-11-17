@@ -19,7 +19,7 @@
             <div class="w-full max-w-sm">
                 <h1 class="text-3xl font-bold">Login Kasir</h1>
 
-                <form action="" method="post" class="mt-8 space-y-4">
+                <form action="{{ route('login') }}" method="post" class="mt-8 space-y-4">
                     @csrf
                     <div>
                         <label for="username" class="mb-1 block text-sm font-semibold">Username / Nomor HP</label>

@@ -24,5 +24,16 @@ class menu extends Model{
         return(float) $this->harga - $this->hpp;
     }
     
-    
+    public function getStatusStokAttribute(): string{
+        
+    if ($this->reseps->isEmpty()) {
+        return 'Tanpa resep';
+    }
+
+    $kurang = $this->reseps->contains(
+        fn ($r) => $r->bahanBaku->stock < $r->takaran
+    );
+
+    return $kurang ? 'Habis' : 'Tersedia';
+}
 }
