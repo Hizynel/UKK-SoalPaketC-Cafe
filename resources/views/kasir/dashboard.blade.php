@@ -1,26 +1,23 @@
 @extends('layouts.kasir')
 @section('title', 'Dashboard')
 @section('content')
-@php
-    $antrean = [
-        ['K7M2QX4A', 'Rina Wulandari', 3, 54450, '2 menit lalu'],
-        ['P9TR5WNB', 'Dimas Pratama', 7, 38500, '5 menit lalu'],
-        ['H4XZ8C2D', 'Sari Anggraini', 1, 71500, '8 menit lalu'],
-        ['M3N6V9LE', 'Budi Santoso', 5, 27500, '11 menit lalu'],
-    ];
-@endphp
+@if (session('error') || session('success'))
+    <div class="mb-5 rounded-xl {{ session('error') ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }} px-4 py-3">
+        {{ session('error') ?? session('success') }}
+    </div>
+@endif
 <div class="grid grid-cols-3 gap-5">
     <div class="rounded-2xl border border-[#eadfd0] bg-white p-6">
         <div class="text-sm text-[#6b5645]">Pesanan Baru</div>
-        <div class="mt-1 text-4xl font-bold text-[#8a5a00]">4</div>
+        <div class="mt-1 text-4xl font-bold text-[#8a5a00]">{{ $baruCount }}</div>
     </div>
     <div class="rounded-2xl border border-[#eadfd0] bg-white p-6">
         <div class="text-sm text-[#6b5645]">Sedang Diproses</div>
-        <div class="mt-1 text-4xl font-bold text-[#1d4e89]">2</div>
+        <div class="mt-1 text-4xl font-bold text-[#1d4e89]">{{ $diprosesCount }}</div>
     </div>
     <div class="rounded-2xl border border-[#eadfd0] bg-white p-6">
         <div class="text-sm text-[#6b5645]">Selesai Hari Ini</div>
-        <div class="mt-1 text-4xl font-bold text-[#1f6b3a]">17</div>
+        <div class="mt-1 text-4xl font-bold text-[#1f6b3a]">{{ $selesaiHariIniCount }}</div>
     </div>
 </div>
 
@@ -35,19 +32,27 @@
             </tr>
         </thead>
         <tbody>
-        @foreach ($antrean as [$kode, $nama, $meja, $total, $masuk])
+        @forelse ($antrean as $pesanan)
             <tr class="border-t border-[#eadfd0]">
-                <td class="px-6 py-4 font-bold">{{ $kode }}</td>
-                <td class="px-6 py-4">{{ $nama }}</td>
-                <td class="px-6 py-4">Meja {{ $meja }}</td>
-                <td class="px-6 py-4">Rp {{ number_format($total, 0, ',', '.') }}</td>
-                <td class="px-6 py-4">{{ $masuk }}</td>
+                <td class="px-6 py-4 font-bold">{{ $pesanan->kode_unik }}</td>
+                <td class="px-6 py-4">{{ $pesanan->nama_pelanggan }}</td>
+                <td class="px-6 py-4">Meja {{ $pesanan->nomor_meja }}</td>
+                <td class="px-6 py-4">Rp {{ number_format($pesanan->total_harga, 0, ',', '.') }}</td>
+                <td class="px-6 py-4">{{ $pesanan->tanggal_pesanan->diffForHumans() }}</td>
                 <td class="px-6 py-4 text-right">
-                    <button class="rounded-lg bg-[#1d4e89] px-4 py-2 font-semibold text-white">Proses</button>
-                    <button class="ml-1 rounded-lg border border-[#9b2c1f] px-4 py-2 font-semibold text-[#9b2c1f]">Batalkan</button>
+                    <form method="POST" action="{{ route('kasir.proses', $pesanan) }}" class="inline">
+                        @csrf
+                        <button class="rounded-lg bg-[#1d4e89] px-4 py-2 font-semibold text-white">Proses</button>
+                    </form>
+                    <form method="POST" action="{{ route('kasir.batal', $pesanan) }}" class="ml-1 inline">
+                        @csrf
+                        <button class="rounded-lg border border-[#9b2c1f] px-4 py-2 font-semibold text-[#9b2c1f]">Batalkan</button>
+                    </form>
                 </td>
             </tr>
-        @endforeach
+        @empty
+            <tr><td colspan="6" class="px-6 py-8 text-center text-[#6b5645]">Belum ada pesanan baru.</td></tr>
+        @endforelse
         </tbody>
     </table>
 </div>

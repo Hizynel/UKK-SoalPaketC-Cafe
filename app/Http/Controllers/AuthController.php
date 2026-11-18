@@ -9,28 +9,33 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
+        if (Auth::check()) {
+            return $this->arahkan(Auth::user()->role);
+        }
         return view('auth.login');
     }
 
     public function login(Request $request)
     {
-        $cred = $request->validate([
-            'nomer_telepon' => 'required',
+        $data = $request->validate([
+            'username' => 'required',
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($cred)) {
-            $request->session()->regenerate();
+        if (Auth::attempt(['nomer_telepon' => $data['username'], 'password' => $data['password']])) {
             $role = Auth::user()->role;
 
-            if ($role === 'manajer') return redirect('/manager');
-            if ($role === 'kasir') return redirect()->route('kasir.dashboard');
+            if (in_array($role, ['kasir', 'manajer'])) {
+                $request->session()->regenerate();
+                return $this->arahkan($role);
+            }
 
             Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
         }
 
-        return back()->withErrors(['login' => 'Username atau password salah.'])
-                     ->onlyInput('nomer_telepon');
+        return back()->withErrors(['login' => 'Username atau password salah.'])->onlyInput('username');
     }
 
     public function logout(Request $request)
@@ -39,5 +44,10 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('login');
+    }
+
+    private function arahkan(string $role)
+    {
+        return $role === 'manajer' ? redirect('/manager') : redirect()->route('kasir.dashboard');
     }
 }

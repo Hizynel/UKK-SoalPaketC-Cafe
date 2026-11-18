@@ -1,26 +1,16 @@
 @extends('layouts.kasir')
 @section('title', 'Data Pesanan / Riwayat')
 @section('content')
-@php
-    $pesanan = [
-        ['K7M2QX4A', 'Rina Wulandari', 3, 73920, 'Baru'],
-        ['P9TR5WNB', 'Dimas Pratama', 7, 38500, 'Diproses'],
-        ['H4XZ8C2D', 'Sari Anggraini', 1, 71500, 'Selesai'],
-        ['M3N6V9LE', 'Budi Santoso', 5, 27500, 'Baru'],
-        ['T8B2K5QY', 'Ayu Lestari', 2, 44000, 'Selesai'],
-        ['C5W7R2HJ', 'Eko Prasetyo', 9, 33000, 'Diproses'],
-    ];
-    $badge = [
-        'Baru' => 'bg-[#fdf0d0] text-[#8a5a00]',
-        'Diproses' => 'bg-[#dce8fb] text-[#1d4e89]',
-        'Selesai' => 'bg-[#dcf2e2] text-[#1f6b3a]',
-    ];
-@endphp
+@if (session('error') || session('success'))
+    <div class="mb-5 rounded-xl {{ session('error') ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }} px-4 py-3">
+        {{ session('error') ?? session('success') }}
+    </div>
+@endif
 <div class="mb-5 flex gap-2" id="tabs">
-    @foreach (['Semua', 'Baru', 'Diproses', 'Selesai'] as $t)
-        <button data-filter="{{ $t }}"
+    @foreach (['semua' => 'Semua', 'baru' => 'Baru', 'diproses' => 'Diproses', 'selesai' => 'Selesai', 'dibatalkan' => 'Dibatalkan'] as $filter => $label)
+        <button data-filter="{{ $filter }}"
                 class="tab rounded-full border border-[#d9cdbf] px-4 py-2 font-semibold {{ $loop->first ? 'bg-[#6f4e37] text-white' : 'bg-white' }}">
-            {{ $t }} ({{ $t === 'Semua' ? count($pesanan) : collect($pesanan)->where(4, $t)->count() }})
+            {{ $label }} ({{ $filter === 'semua' ? $pesanan->count() : $pesanan->where('status_pesanan', $filter)->count() }})
         </button>
     @endforeach
 </div>
@@ -32,25 +22,45 @@
                 <th class="px-6 py-3">Total</th><th class="px-6 py-3">Status</th><th></th></tr>
         </thead>
         <tbody>
-        @foreach ($pesanan as [$kode, $nama, $meja, $total, $status])
+        @forelse ($pesanan as $item)
+            @php
+                $badge = [
+                    'baru' => 'bg-[#fdf0d0] text-[#8a5a00]',
+                    'diproses' => 'bg-[#dce8fb] text-[#1d4e89]',
+                    'selesai' => 'bg-[#dcf2e2] text-[#1f6b3a]',
+                    'dibatalkan' => 'bg-gray-100 text-gray-600',
+                ];
+                $status = $item->status_pesanan;
+            @endphp
             <tr class="baris border-t border-[#eadfd0]" data-status="{{ $status }}">
-                <td class="px-6 py-4 font-bold">{{ $kode }}</td>
-                <td class="px-6 py-4">{{ $nama }}</td>
-                <td class="px-6 py-4">Meja {{ $meja }}</td>
-                <td class="px-6 py-4">Rp {{ number_format($total, 0, ',', '.') }}</td>
-                <td class="px-6 py-4"><span class="rounded-full px-3 py-1 text-xs font-semibold {{ $badge[$status] }}">{{ $status }}</span></td>
+                <td class="px-6 py-4 font-bold">{{ $item->kode_unik }}</td>
+                <td class="px-6 py-4">{{ $item->nama_pelanggan }}</td>
+                <td class="px-6 py-4">Meja {{ $item->nomor_meja }}</td>
+                <td class="px-6 py-4">Rp {{ number_format($item->total_harga, 0, ',', '.') }}</td>
+                <td class="px-6 py-4"><span class="rounded-full px-3 py-1 text-xs font-semibold {{ $badge[$status] ?? 'bg-gray-100 text-gray-600' }}">{{ ucfirst($status) }}</span></td>
                 <td class="px-6 py-4 text-right">
-                    @if ($status === 'Baru')
-                        <button class="rounded-lg bg-[#1d4e89] px-4 py-2 font-semibold text-white">Proses</button>
-                        <button class="ml-1 rounded-lg border border-[#9b2c1f] px-4 py-2 font-semibold text-[#9b2c1f]">Batalkan</button>
-                    @elseif ($status === 'Diproses')
-                        <button class="rounded-lg bg-[#1f6b3a] px-4 py-2 font-semibold text-white">Selesaikan</button>
-                    @else
-                        <button class="btn-struk rounded-lg bg-[#f3e6d6] px-4 py-2 font-semibold">Lihat Struk</button>
+                    @if ($status === 'baru')
+                        <form method="POST" action="{{ route('kasir.proses', $item) }}" class="inline">
+                            @csrf
+                            <button class="rounded-lg bg-[#1d4e89] px-4 py-2 font-semibold text-white">Proses</button>
+                        </form>
+                        <form method="POST" action="{{ route('kasir.batal', $item) }}" class="ml-1 inline">
+                            @csrf
+                            <button class="rounded-lg border border-[#9b2c1f] px-4 py-2 font-semibold text-[#9b2c1f]">Batalkan</button>
+                        </form>
+                    @elseif ($status === 'diproses')
+                        <form method="POST" action="{{ route('kasir.selesai', $item) }}" class="inline">
+                            @csrf
+                            <button class="rounded-lg bg-[#1f6b3a] px-4 py-2 font-semibold text-white">Selesaikan</button>
+                        </form>
+                    @elseif ($status === 'selesai')
+                        <a href="{{ route('kasir.struk', $item) }}" class="rounded-lg bg-[#f3e6d6] px-4 py-2 font-semibold">Lihat Struk</a>
                     @endif
                 </td>
             </tr>
-        @endforeach
+        @empty
+            <tr><td colspan="6" class="px-6 py-8 text-center text-[#6b5645]">Belum ada data pesanan.</td></tr>
+        @endforelse
         </tbody>
     </table>
 </div>
@@ -58,21 +68,6 @@
     Status berubah berjenjang: Baru → Diproses → Selesai. Pembatalan hanya untuk pesanan Baru dan stok bahan kembali otomatis.
 </p>
 
-<div id="struk" class="fixed inset-0 hidden items-center justify-center bg-black/45">
-    <div class="w-[420px] rounded-2xl bg-white p-8">
-        <div class="text-center text-lg font-bold">Kedai Kopi Senja</div>
-        <div class="text-center text-sm text-[#6b5645]">Struk Pesanan H4XZ8C2D</div>
-        <div class="mt-4 space-y-1 text-sm">
-            <div class="flex justify-between"><span>2× Latte</span><span>56.000</span></div>
-            <div class="flex justify-between"><span>1× Roti Bakar Cokelat</span><span>20.000</span></div>
-            <div class="flex justify-between border-t border-dashed pt-1"><span>Subtotal</span><span>76.000</span></div>
-            <div class="flex justify-between"><span>Service 5%</span><span>3.800</span></div>
-            <div class="flex justify-between"><span>Pajak 10%</span><span>7.980</span></div>
-            <div class="flex justify-between border-t border-dashed pt-2 text-base font-bold"><span>Total</span><span>Rp 87.780</span></div>
-        </div>
-        <button id="tutup" class="mt-6 w-full rounded-xl bg-[#6f4e37] py-3 font-bold text-white">Tutup</button>
-    </div>
-</div>
 @endsection
 
 @push('scripts')
@@ -85,10 +80,7 @@
             b.classList.toggle('bg-white', !on);
         });
         document.querySelectorAll('.baris').forEach(r =>
-            r.style.display = (f === 'Semua' || r.dataset.status === f) ? '' : 'none');
+            r.style.display = (f === 'semua' || r.dataset.status === f) ? '' : 'none');
     });
-    const struk = document.getElementById('struk');
-    document.querySelectorAll('.btn-struk').forEach(b => b.onclick = () => { struk.classList.remove('hidden'); struk.classList.add('flex'); });
-    document.getElementById('tutup').onclick = () => { struk.classList.add('hidden'); struk.classList.remove('flex'); };
 </script>
 @endpush

@@ -10,6 +10,7 @@ use App\Models\pesanan;
 use App\Models\pesanan_bahan;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class PesananService
@@ -74,12 +75,15 @@ class PesananService
         if (! $porsi) {
             throw new PesananDitolak('Pilih minimal satu menu.');
         }
+        if (! Schema::hasTable('pesanan_bahans')) {
+            throw new PesananDitolak('Tabel pesanan_bahans belum tersedia. Jalankan php artisan migrate terlebih dahulu.');
+        }
 
         return DB::transaction(function () use ($porsi, $nama, $meja, $metode, $kasir, $pelanggan) {
             if ($pelanggan) {
                 User::whereKey($pelanggan->id)->lockForUpdate()->first();
 
-                if (pesanan::where('id_pelanggan', $pelanggan->id)->where('status_pesanan', 'Baru')->exists()) {
+                if (pesanan::where('id_pelanggan', $pelanggan->id)->where('status_pesanan', 'baru')->exists()) {
                     throw new PesananDitolak('Anda masih punya pesanan berstatus Baru.');
                 }
             }
@@ -109,8 +113,8 @@ class PesananService
                 'tanggal_pesanan' => now(),
                 'nama_pelanggan'  => $pelanggan?->name ?? $nama,
                 'nomor_meja'      => $meja,
-                'metode_pesan'    => $metode,
-                'status_pesanan'  => 'Baru',
+                'metode_pesan'    => strtolower($metode),
+                'status_pesanan'  => 'baru',
                 'subtotal'        => $b['subtotal'],
                 'service'         => $b['service'],
                 'pajak'           => $b['pajak'],
@@ -118,13 +122,21 @@ class PesananService
             ]);
 
             foreach ($porsi as $idMenu => $jml) {
-                detail_pesanan::create([
+                $detail = [
                     'id_pesanan'   => $p->id,
                     'id_menu'      => $idMenu,
-                    'nama_menu'    => $menus[$idMenu]->nama_menu,
                     'jumlah'       => $jml,
-                    'harga_satuan' => $menus[$idMenu]->harga,
-                ]);
+                    'subtotal'     => $menus[$idMenu]->harga * $jml,
+                ];
+
+                if (Schema::hasColumn('detail_pesanans', 'nama_menu')) {
+                    $detail['nama_menu'] = $menus[$idMenu]->nama_menu;
+                }
+                if (Schema::hasColumn('detail_pesanans', 'harga_satuan')) {
+                    $detail['harga_satuan'] = $menus[$idMenu]->harga;
+                }
+
+                detail_pesanan::create($detail);
             }
 
             foreach ($butuh as $idBahan => $jml) {
@@ -142,7 +154,7 @@ class PesananService
 
         DB::transaction(function () use ($p, $target) {
             $p = pesanan::whereKey($p->id)->lockForUpdate()->firstOrFail();
-            $berikut = ['Baru' => 'Diproses', 'Diproses' => 'Selesai'][$p->status_pesanan] ?? null;
+            $berikut = ['baru' => 'diproses', 'diproses' => 'selesai'][$p->status_pesanan] ?? null;
 
             if ($berikut === null || $berikut !== $target) {
                 throw new PesananDitolak("Status {$p->status_pesanan} tidak bisa langsung menjadi {$target}.");
@@ -159,7 +171,7 @@ class PesananService
         DB::transaction(function () use ($p) {
             $p = pesanan::whereKey($p->id)->lockForUpdate()->firstOrFail();
 
-            if ($p->status_pesanan !== 'Baru') {
+            if ($p->status_pesanan !== 'baru') {
                 throw new PesananDitolak('Pesanan hanya bisa dibatalkan saat berstatus Baru.');
             }
 
@@ -167,7 +179,7 @@ class PesananService
                 bahan_baku::whereKey($b->id_bahan_baku)->increment('stock', $b->jumlah);
             }
 
-            $p->update(['status_pesanan' => 'Dibatalkan']);
+            $p->update(['status_pesanan' => 'dibatalkan']);
         });
     }
 
