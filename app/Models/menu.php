@@ -35,13 +35,12 @@ class menu extends Model{
     }
     
     public function getStatusStokAttribute(): string{
-        
     if ($this->reseps->isEmpty()) {
         return 'Tanpa resep';
     }
 
     $kurang = $this->reseps->contains(
-        fn ($r) => $r->bahanBaku->stock < $r->takaran
+        fn ($r) => ! $r->bahanBaku || $r->bahanBaku->stock < $r->takaran
     );
 
     return $kurang ? 'Habis' : 'Tersedia';

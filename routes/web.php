@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Kasir\AkunPelangganController;
 use App\Http\Controllers\Kasir\PesananController;
+use App\Http\Controllers\Kasir\ResepController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -26,4 +27,6 @@ use App\Http\Controllers\Kasir\PesananController;
 
     Route::get('/akun-pelanggan', [AkunPelangganController::class, 'index'])->name('akun');
     Route::post('/akun-pelanggan/{user}/reset', [AkunPelangganController::class, 'reset'])->name('akun.reset');
+
+    Route::get('/resep', [ResepController::class, 'index'])->name('resep');
 });

@@ -12,6 +12,7 @@
         ['kasir.dashboard', 'Dashboard'],
         ['kasir.input', 'Input Pesanan'],
         ['kasir.data', 'Data Pesanan'],
+        ['kasir.resep', 'Resep'],
         ['kasir.akun', 'Akun Pelanggan'],
     ];
 @endphp

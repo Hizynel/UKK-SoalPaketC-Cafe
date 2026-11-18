@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['nama_bahan', 'stock', 'batas_minimun', 'satuan', 'harga_terakhir', 'harga_diperbaharui'])]
 class bahan_baku extends Model{
-    protected function casts(): array
-    {
+    protected function casts(): array{
         return [
             'harga_diperbaharui' => 'date',
         ];
