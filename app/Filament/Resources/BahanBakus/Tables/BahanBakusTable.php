@@ -34,7 +34,7 @@ class BahanBakusTable
 
                 TextColumn::make('harga_terakhir')
                     ->label('Harga per satuan dasar')
-                    ->money('IDR', locale: 'id'),
+                    ->money('IDR', locale: 'id', decimalPlaces: 2),
 
                 TextColumn::make('harga_diperbaharui')
                     ->label('Harga diperbaharui pada')
