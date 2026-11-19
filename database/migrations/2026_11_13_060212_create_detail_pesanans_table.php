@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignId('id_menu')->constrained('menus');
             $table->string('nama_menu');
             $table->integer('jumlah');
-            $table->decimal('harga_satuan', 12, 2);
-            $table->decimal('subtotal', 12, 2);
+            $table->decimal('harga_satuan', 10, 2);
+            $table->decimal('subtotal', 10, 2);
             $table->timestamps();
         });
     }

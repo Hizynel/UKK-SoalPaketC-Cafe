@@ -13,11 +13,19 @@ class MenuForm
     {
         return $schema
         ->components([
+        TextInput::make('kode_menu')
+            ->label('Kode Menu')
+            ->placeholder('Contoh: MNU-001')
+            ->unique(ignoreRecord: true),
+
         TextInput::make('nama_menu')
         ->required(),
 
         Select::make('kategori')
-            ->options(['Kopi' => 'Kopi', 'Non-Kopi' => 'Non-Kopi', 'Makanan' => 'Makanan'])
+            ->options([
+                'Minuman' => 'Minuman',
+                'Makanan' => 'Makanan',
+            ])
             ->required(),
 
         TextInput::make('harga')

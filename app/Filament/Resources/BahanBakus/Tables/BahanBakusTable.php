@@ -20,6 +20,12 @@ class BahanBakusTable
     {
         return $table
             ->columns([
+                TextColumn::make('kode_bahan')
+                    ->label('Kode')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('—'),
+
                 TextColumn::make('nama_bahan')
                     ->searchable()
                     ->sortable(),

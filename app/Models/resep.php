@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[Fillable(['id_menu', 'id_bahan_baku', 'takaran'])]
+#[Fillable(['kode_menu', 'id_menu', 'id_bahan_baku', 'takaran'])]
 class resep extends Model
 {
     public function menu(): BelongsTo{

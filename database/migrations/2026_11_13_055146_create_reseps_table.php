@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('reseps', function (Blueprint $table) {
             $table->id();
-            $table->integer(kode_menu);
+            $table->string('kode_menu')->nullable();
             $table->foreignId('id_menu')->constrained('menus')->cascadeOnDelete();
             $table->foreignId('id_bahan_baku')->constrained('bahan_bakus');
-            $table->decimal('takaran','10','2');
+            $table->decimal('takaran', 10, 2);
             $table->timestamps();
         });
     }

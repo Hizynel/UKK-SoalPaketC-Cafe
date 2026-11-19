@@ -17,6 +17,12 @@ class MenusTable
         return $table
         ->modifyQueryUsing(fn ($query) => $query->with('reseps.bahanBaku'))
             ->columns([
+                TextColumn::make('kode_menu')
+                    ->label('Kode')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('—'),
+
                 TextColumn::make('nama_menu')
                 ->label('Nama Menu')
                 ->searchable()
@@ -34,7 +40,7 @@ class MenusTable
                 TextColumn::make('margin')
                 ->money('IDR', locale: 'id')
                 ->color(fn ($state) => $state < 0 ? 'danger' : 'success'),
-                
+
                 IconColumn::make('status')
                     ->label('Aktif')
                     ->boolean()

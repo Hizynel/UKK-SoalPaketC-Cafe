@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('bahan_bakus', function (Blueprint $table) {
             $table->id();
-            $table->integer('kode_barang');
-            $table->string('nama_bahan');
-            $table->decimal('stock', 10, 2) -> default(0);
-            $table->decimal('batas_minimun', 10, 2) -> default(0);
-            $table->enum('satuan', ['g', 'ml', 'pcs']);
-            $table->decimal('harga_terakhir', 12, 4) -> default(0);
-            $table->date('harga_diperbaharui') -> nullable();
+            $table->string('kode_bahan')->nullable()->unique();
+            $table->string('nama_bahan')->unique();
+            $table->decimal('stock', 10, 2)->default(0);
+            $table->decimal('batas_minimun', 10, 2)->default(0);
+            $table->string('satuan', 20);
+            $table->decimal('harga_terakhir', 10, 2)->default(0);
+            $table->date('harga_diperbaharui')->nullable();
             $table->timestamps();
-            });
+        });
     }
 
     /**

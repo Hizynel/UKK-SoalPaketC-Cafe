@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['nama_menu', 'harga', 'status','kategori'])]
+#[Fillable(['kode_menu', 'nama_menu', 'harga', 'status', 'kategori'])]
 class menu extends Model{
 
     public function reseps(): HasMany{
@@ -37,6 +37,10 @@ class menu extends Model{
     public function getStatusStokAttribute(): string{
     if ($this->reseps->isEmpty()) {
         return 'Tanpa resep';
+    }
+
+    if (($this->attributes['status'] ?? '') !== 'tersedia') {
+        return 'Habis';
     }
 
     $kurang = $this->reseps->contains(

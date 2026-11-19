@@ -21,10 +21,10 @@ return new class extends Migration
             $table->string('kode_unik', 8)->unique();
             $table->enum('status_pesanan', ['baru', 'diproses', 'selesai', 'dibatalkan']) ->default('baru');
             $table->enum('metode_pesan', ['tunai', 'qris']);
-            $table->decimal('subtotal', 12 , 2);
-            $table->decimal('service', 12 , 2);
-            $table->decimal('pajak', 12 , 2);
-            $table->decimal('total_harga', 12 , 2);
+            $table->decimal('subtotal', 10 , 2);
+            $table->decimal('service', 10 , 2);
+            $table->decimal('pajak', 10 , 2);
+            $table->decimal('total_harga', 10 , 2);
             $table->timestamps();
         });
     }

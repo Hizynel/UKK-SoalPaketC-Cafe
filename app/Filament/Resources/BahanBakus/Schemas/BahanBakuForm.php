@@ -12,6 +12,11 @@ class BahanBakuForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
+        TextInput::make('kode_bahan')
+            ->label('Kode Bahan')
+            ->placeholder('Contoh: BHN-001')
+            ->unique(ignoreRecord: true),
+
         TextInput::make('nama_bahan')->required()->dehydrateStateUsing(fn ($state) => trim($state))->unique(
                 ignoreRecord: true,
                 modifyRuleUsing: fn (Unique $rule) => $rule,
@@ -30,7 +35,7 @@ class BahanBakuForm
         ->label('Batas minimum')
         ->numeric()
         ->minValue(0)
-        ->default(0)
+        ->default(10)
         ->required(),
 
         TextInput::make('harga_terakhir')

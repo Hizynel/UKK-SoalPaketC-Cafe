@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('stock_masuks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_bahan_baku')->constrained('bahan_bakus');
-            $table->decimal('jumlah','10','2');
+            $table->decimal('jumlah', 10, 2);
             $table->dateTime('tanggal_pembelian');
             $table->timestamps();
         });
