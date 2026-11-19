@@ -19,6 +19,7 @@ class LaporanPenjualan extends Page implements HasTable
     protected static ?string $navigationLabel = 'Penjualan';
     protected static ?string $title = 'Laporan Penjualan per Menu';
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan';
+    protected static ?int $navigationSort = 2;
 
     public function table(Table $table): Table
     {

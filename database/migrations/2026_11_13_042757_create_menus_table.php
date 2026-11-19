@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
+            $tbale->integer('kode_menu');
             $table->string('nama_menu');
             $table->decimal('harga');
             $table->string('kategori');

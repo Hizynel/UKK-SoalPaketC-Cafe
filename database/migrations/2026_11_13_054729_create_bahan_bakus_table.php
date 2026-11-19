@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('bahan_bakus', function (Blueprint $table) {
             $table->id();
+            $table->integer('kode_barang');
             $table->string('nama_bahan');
             $table->decimal('stock', 10, 2) -> default(0);
             $table->decimal('batas_minimun', 10, 2) -> default(0);

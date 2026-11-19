@@ -17,6 +17,7 @@ class LaporanMargin extends Page implements HasTable
     protected static ?string $navigationLabel = 'Margin Menu';
     protected static ?string $title = 'Laporan Margin per Menu';
     protected static string|\UnitEnum|null $navigationGroup = 'Laporan';
+    protected static ?int $navigationSort = 3;
 
     public function table(Table $table): Table
     {
