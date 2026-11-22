@@ -1,5 +1,7 @@
 {
-  "name": "ionic-app-base",
-  "integrations": {},
+  "name": "CafeApk",
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "react-vite"
 }
