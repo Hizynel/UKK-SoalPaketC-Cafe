@@ -1,0 +1,154 @@
+.order-form-body {
+  padding: 18px 16px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.order-field-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3b302a;
+}
+
+.select-container {
+  position: relative;
+}
+
+.order-select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d9cbbe;
+  background-color: #ffffff;
+  font-size: 15px;
+  color: #2c2523;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.payment-toggle-group {
+  display: flex;
+  background-color: #ebdcd0;
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.payment-toggle-btn {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  color: #63534b;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.payment-toggle-btn.active {
+  background-color: var(--primary-coffee);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.order-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-item-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #ebdcd0;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.order-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.order-item-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2b2320;
+}
+
+.order-item-price {
+  font-size: 13px;
+  color: #796e68;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.counter-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid #d4c5b8;
+  background-color: #ffffff;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #3b302a;
+}
+
+.counter-btn:active {
+  background-color: #ebdcd0;
+}
+
+.counter-val {
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 22px;
+  text-align: center;
+}
+
+.price-summary-box {
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #ebdcd0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #4b3f39;
+}
+
+.summary-divider {
+  border-top: 1px dashed #d5c8be;
+  margin: 4px 0;
+}
+
+.summary-total {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f1815;
+}
+

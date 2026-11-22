@@ -1,2 +1,192 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+:root {
+  --primary-coffee: #5c3e29;
+  --primary-coffee-hover: #473020;
+  --bg-cream: #faf5ee;
+  --card-bg: #ffffff;
+  --text-dark: #2c2523;
+  --text-muted: #796e68;
+  --border-cream: #ebdcd0;
+  --border-card: #f0ebe4;
+  --tag-green-bg: #e5f6ee;
+  --tag-green-text: #17834a;
+  --tag-red-bg: #fde8e8;
+  --tag-red-text: #d33c30;
+  --tag-yellow-bg: #fef5db;
+  --tag-yellow-text: #b67d0b;
+  --tag-blue-bg: #e6f0fa;
+  --tag-blue-text: #1b63bd;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-cream);
+  color: var(--text-dark);
+  margin: 0;
+  padding: 0;
+}
+
+/* Base custom classes */
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: var(--bg-cream);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.senja-header {
+  background-color: var(--primary-coffee);
+  color: #ffffff;
+  padding: 16px 20px;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Bottom Tab Navigation */
+.senja-tabs {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: 60px;
+  background-color: #ffffff;
+  border-top: 1px solid #ebdcd0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: #796e68;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.tab-btn.active {
+  color: var(--primary-coffee);
+  font-weight: 700;
+}
+
+/* Coffee Button */
+.btn-coffee-primary {
+  background-color: var(--primary-coffee);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-align: center;
+}
+
+.btn-coffee-primary:active {
+  background-color: var(--primary-coffee-hover);
+}
+
+.btn-coffee-outline {
+  background-color: transparent;
+  color: var(--primary-coffee);
+  border: 1px solid var(--primary-coffee);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Segment Pill */
+.filter-pills {
+  display: flex;
+  gap: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+}
+
+.pill-item {
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 14px;
+  border: 1px solid #dfd5cb;
+  background-color: #ffffff;
+  color: #493f3a;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pill-item.active {
+  background-color: var(--primary-coffee);
+  color: #ffffff;
+  border-color: var(--primary-coffee);
+  font-weight: 600;
+}
+
+/* Common Card */
+.senja-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #ece4dc;
+  padding: 16px;
+  margin: 0 16px 14px 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+/* Badges */
+.badge-tersedia {
+  background-color: var(--tag-green-bg);
+  color: var(--tag-green-text);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-habis {
+  background-color: var(--tag-red-bg);
+  color: var(--tag-red-text);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-status {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-baru {
+  background-color: var(--tag-yellow-bg);
+  color: var(--tag-yellow-text);
+}
+
+.badge-diproses {
+  background-color: var(--tag-blue-bg);
+  color: var(--tag-blue-text);
+}
+
+.badge-selesai {
+  background-color: var(--tag-green-bg);
+  color: var(--tag-green-text);
+}

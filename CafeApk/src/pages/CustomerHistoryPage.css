@@ -1,0 +1,98 @@
+.history-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 16px 20px 16px;
+}
+
+.history-card {
+  background-color: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #ebdcd0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+}
+
+.history-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-code-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f1815;
+  letter-spacing: 0.5px;
+}
+
+.history-meta {
+  font-size: 14px;
+  color: #6d615a;
+}
+
+/* Stepper Pill container */
+.stepper-container {
+  display: flex;
+  background-color: #f7eee4;
+  border-radius: 8px;
+  padding: 3px;
+  margin: 4px 0;
+}
+
+.step-item {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  padding: 6px 0;
+  font-weight: 600;
+  color: #796e68;
+  border-radius: 6px;
+}
+
+.step-item.active {
+  background-color: var(--primary-coffee);
+  color: #ffffff;
+}
+
+.step-item.completed {
+  background-color: #dec8b6;
+  color: #3f2e22;
+}
+
+.history-breakdown {
+  border-top: 1px solid #ebdcd0;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #3b302a;
+}
+
+.breakdown-divider {
+  border-top: 1px dashed #d5c8be;
+  margin: 4px 0;
+}
+
+.breakdown-total {
+  font-size: 16px;
+  font-weight: 700;
+  color: #140e0b;
+}
+
+.empty-state {
+  text-align: center;
+  color: #796e68;
+  padding: 32px 16px;
+  font-size: 15px;
+}
+
