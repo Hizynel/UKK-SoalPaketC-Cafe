@@ -32,6 +32,7 @@
                     $statusColor = match($pesanan->status_pesanan) {
                         'selesai' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400',
                         'diproses' => 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400',
+                        'siap' => 'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-400',
                         'baru' => 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400',
                         'dibatalkan' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400',
                         default => 'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-300',
@@ -101,4 +102,3 @@
         </div>
     </div>
 </div>
-

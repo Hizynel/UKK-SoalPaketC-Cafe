@@ -15,7 +15,7 @@ class PesananController extends Controller
 {
     public function input(): View
     {
-        $menus = menu::where('status', 'tersedia')
+        $menus = menu::where('is_active', true)
             ->whereHas('reseps')
             ->orderBy('nama_menu')
             ->get();
@@ -67,6 +67,7 @@ class PesananController extends Controller
             'antrean' => $antrean,
             'baruCount' => $antrean->count(),
             'diprosesCount' => pesanan::where('status_pesanan', 'diproses')->count(),
+            'siapCount' => pesanan::where('status_pesanan', 'siap')->count(),
             'selesaiHariIniCount' => pesanan::where('status_pesanan', 'selesai')
                 ->whereDate('tanggal_pesanan', today())
                 ->count(),
@@ -88,6 +89,11 @@ class PesananController extends Controller
     public function selesai(pesanan $pesanan, PesananService $service): RedirectResponse
     {
         return $this->ubahStatus($pesanan, 'selesai', $service);
+    }
+
+    public function siap(pesanan $pesanan, PesananService $service): RedirectResponse
+    {
+        return $this->ubahStatus($pesanan, 'siap', $service);
     }
 
     public function batal(pesanan $pesanan, PesananService $service): RedirectResponse

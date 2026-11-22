@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\Menus\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -44,7 +42,7 @@ class MenusTable
                 IconColumn::make('status')
                     ->label('Aktif')
                     ->boolean()
-                    ->state(fn ($record): bool => $record->status === 'tersedia'),
+                    ->state(fn ($record): bool => $record->aktif),
 
                     TextColumn::make('status_stok')
                     ->label('Stok')
@@ -59,11 +57,6 @@ class MenusTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

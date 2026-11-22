@@ -11,9 +11,8 @@ class MenuController extends Controller
     public function index(): View
     {
         $menus = menu::query()
-            ->with('reseps.bahanBaku')
             ->orderBy('nama_menu')
-            ->get(['id', 'nama_menu', 'kategori', 'harga', 'status']);
+            ->get(['id', 'nama_menu', 'kategori', 'harga', 'status', 'is_active']);
 
         return view('kasir.menu', compact('menus'));
     }

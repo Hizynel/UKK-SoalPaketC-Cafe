@@ -21,6 +21,7 @@ use App\Http\Controllers\Kasir\PesananController;
     Route::post('/input-pesanan', [PesananController::class, 'store'])->name('input.store');
     Route::get('/data-pesanan', [PesananController::class, 'data'])->name('data');
     Route::post('/pesanan/{pesanan}/proses', [PesananController::class, 'proses'])->name('proses');
+    Route::post('/pesanan/{pesanan}/siap', [PesananController::class, 'siap'])->name('siap');
     Route::post('/pesanan/{pesanan}/selesai', [PesananController::class, 'selesai'])->name('selesai');
     Route::post('/pesanan/{pesanan}/batal', [PesananController::class, 'batal'])->name('batal');
     Route::get('/pesanan/{pesanan}/struk', [PesananController::class, 'struk'])->name('struk');

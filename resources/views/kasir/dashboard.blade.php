@@ -6,7 +6,7 @@
         {{ session('error') ?? session('success') }}
     </div>
 @endif
-<div class="grid grid-cols-3 gap-5">
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
     <div class="rounded-2xl border border-[#eadfd0] bg-white p-6">
         <div class="text-sm text-[#6b5645]">Pesanan Baru</div>
         <div class="mt-1 text-4xl font-bold text-[#8a5a00]">{{ $baruCount }}</div>
@@ -14,6 +14,10 @@
     <div class="rounded-2xl border border-[#eadfd0] bg-white p-6">
         <div class="text-sm text-[#6b5645]">Sedang Diproses</div>
         <div class="mt-1 text-4xl font-bold text-[#1d4e89]">{{ $diprosesCount }}</div>
+    </div>
+    <div class="rounded-2xl border border-[#eadfd0] bg-white p-6">
+        <div class="text-sm text-[#6b5645]">Siap</div>
+        <div class="mt-1 text-4xl font-bold text-purple-700">{{ $siapCount }}</div>
     </div>
     <div class="rounded-2xl border border-[#eadfd0] bg-white p-6">
         <div class="text-sm text-[#6b5645]">Selesai Hari Ini</div>

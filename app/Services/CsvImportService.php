@@ -30,6 +30,7 @@ class CsvImportService
         $bahanCount = 0;
         $menuCount = 0;
         $resepCount = 0;
+        $resepSkippedCount = 0;
 
         DB::beginTransaction();
 
@@ -46,16 +47,19 @@ class CsvImportService
                 // Deteksi Header Seksi
                 if ($firstCol === 'kode' && isset($row[1]) && strtolower(trim($row[1])) === 'nama_bahan') {
                     $currentSection = 'bahan';
+
                     continue;
                 }
 
                 if ($firstCol === 'kode' && isset($row[1]) && strtolower(trim($row[1])) === 'nama_menu') {
                     $currentSection = 'menu';
+
                     continue;
                 }
 
                 if ($firstCol === 'kode_menu' && isset($row[1]) && strtolower(trim($row[1])) === 'nama_bahan') {
                     $currentSection = 'resep';
+
                     continue;
                 }
 
@@ -89,8 +93,11 @@ class CsvImportService
                 } elseif ($currentSection === 'resep') {
                     // Format: kode_menu,nama_bahan,takaran,satuan
                     if (count($row) >= 3 && str_starts_with(strtoupper($row[0]), 'MNU-')) {
-                        $this->importResepRow($row);
-                        $resepCount++;
+                        if ($this->importResepRow($row)) {
+                            $resepCount++;
+                        } else {
+                            $resepSkippedCount++;
+                        }
                     }
                 }
             }
@@ -102,14 +109,15 @@ class CsvImportService
                 'bahan_count' => $bahanCount,
                 'menu_count' => $menuCount,
                 'resep_count' => $resepCount,
-                'message' => "Berhasil mengimpor {$bahanCount} bahan baku, {$menuCount} menu, dan {$resepCount} komposisi resep.",
+                'resep_skipped_count' => $resepSkippedCount,
+                'message' => "Berhasil mengimpor {$bahanCount} bahan baku, {$menuCount} menu, dan {$resepCount} komposisi resep. {$resepSkippedCount} baris resep dilewati karena menu/bahan tidak dikenal atau satuannya tidak sesuai.",
             ];
         } catch (\Throwable $e) {
             DB::rollBack();
 
             return [
                 'ok' => false,
-                'message' => 'Gagal mengimpor CSV: ' . $e->getMessage(),
+                'message' => 'Gagal mengimpor CSV: '.$e->getMessage(),
             ];
         }
     }
@@ -125,27 +133,21 @@ class CsvImportService
         $satuanRaw = strtolower(trim($row[3]));
         $hargaRaw = (float) trim($row[4]);
 
-        $satuan = $satuanRaw;
-        $stock = $stokRaw;
-        $harga = $hargaRaw;
-
-        // Konversi satuan besar (kg, liter) ke satuan dasar resep (g, ml)
-        if ($satuanRaw === 'kg') {
-            $satuan = 'g';
-            $stock = $stokRaw * 1000;
-            $harga = $hargaRaw / 1000;
-        } elseif ($satuanRaw === 'liter' || $satuanRaw === 'l') {
-            $satuan = 'ml';
-            $stock = $stokRaw * 1000;
-            $harga = $hargaRaw / 1000;
+        $unit = $this->normalizeUnit($satuanRaw);
+        if (! $unit) {
+            throw new \InvalidArgumentException("Satuan bahan '{$satuanRaw}' tidak dikenal.");
         }
+
+        $satuan = $unit['base'];
+        $stock = $stokRaw * $unit['factor'];
+        $harga = $hargaRaw / $unit['factor'];
 
         $bahan = bahan_baku::where('kode_bahan', $kode)
             ->orWhereRaw('LOWER(TRIM(nama_bahan)) = ?', [mb_strtolower($nama)])
             ->first();
 
         if (! $bahan) {
-            $bahan = new bahan_baku();
+            $bahan = new bahan_baku;
         }
 
         $bahan->kode_bahan = $kode;
@@ -173,8 +175,9 @@ class CsvImportService
             ->first();
 
         if (! $menu) {
-            $menu = new menu();
+            $menu = new menu;
             $menu->status = 'tersedia';
+            $menu->is_active = true;
         }
 
         $menu->kode_menu = $kode;
@@ -187,12 +190,12 @@ class CsvImportService
     /**
      * Import 1 baris resep
      */
-    private function importResepRow(array $row): void
+    private function importResepRow(array $row): bool
     {
         $kodeMenu = trim($row[0]);
         $namaBahan = trim($row[1]);
         $takaran = (float) trim($row[2]);
-        $satuanRecipe = trim($row[3] ?? '');
+        $satuanRecipe = strtolower(trim($row[3] ?? ''));
 
         // Cari menu berdasarkan kode_menu
         $menu = menu::where('kode_menu', $kodeMenu)
@@ -200,30 +203,28 @@ class CsvImportService
             ->first();
 
         if (! $menu) {
-            return;
+            return false;
         }
 
         // Cari bahan baku berdasarkan nama (dengan normalisasi variasi ejaan)
-        $namaSearch = mb_strtolower($namaBahan);
-        if ($namaSearch === 'biji kopi arabica') {
-            $namaSearch = 'biji kopi arabika';
-        }
+        $namaSearch = $this->normalizeIngredientName($namaBahan);
 
-        $bahan = bahan_baku::whereRaw('LOWER(TRIM(nama_bahan)) = ?', [$namaSearch])->first();
+        $bahan = bahan_baku::query()
+            ->whereRaw('LOWER(TRIM(nama_bahan)) = ?', [$namaSearch])
+            ->first();
 
-        // Jika bahan baku belum ada (contoh: Susu oat, Sirup vanila), buatkan otomatis
         if (! $bahan) {
-            $bahan = bahan_baku::create([
-                'nama_bahan' => $namaBahan,
-                'satuan' => $satuanRecipe ?: 'g',
-                'stock' => 0,
-                'harga_terakhir' => 0,
-                'harga_diperbaharui' => now()->toDateString(),
-            ]);
+            return false;
         }
 
-        $bahan->batas_minimun = 0;
-        $bahan->save();
+        $recipeUnit = $satuanRecipe === '' ? ['base' => $bahan->satuan, 'factor' => 1] : $this->normalizeUnit($satuanRecipe);
+        $ingredientUnit = $this->normalizeUnit($bahan->satuan);
+
+        if (! $recipeUnit || ! $ingredientUnit || $recipeUnit['base'] !== $ingredientUnit['base']) {
+            return false;
+        }
+
+        $takaran *= $recipeUnit['factor'];
 
         resep::updateOrCreate(
             [
@@ -235,6 +236,36 @@ class CsvImportService
                 'takaran' => $takaran,
             ]
         );
+
+        return true;
+    }
+
+    private function normalizeIngredientName(string $name): string
+    {
+        $name = mb_strtolower(trim(preg_replace('/\s+/', ' ', $name)));
+
+        return match ($name) {
+            'biji kopi arabica' => 'biji kopi arabika',
+            'gula pasri' => 'gula pasir',
+            default => $name,
+        };
+    }
+
+    /**
+     * Return the canonical base unit and conversion factor for the supplied unit.
+     *
+     * @return array{base: string, factor: float}|null
+     */
+    private function normalizeUnit(string $unit): ?array
+    {
+        return match (mb_strtolower(trim($unit))) {
+            'kg', 'kilogram', 'kilograms' => ['base' => 'g', 'factor' => 1000],
+            'g', 'gr', 'gram', 'grams' => ['base' => 'g', 'factor' => 1],
+            'l', 'lt', 'liter', 'litre', 'liters', 'litres' => ['base' => 'ml', 'factor' => 1000],
+            'ml', 'mililiter', 'milliliter', 'millilitre' => ['base' => 'ml', 'factor' => 1],
+            'pcs' => ['base' => 'pcs', 'factor' => 1],
+            default => null,
+        };
     }
 
     /**

@@ -154,7 +154,11 @@ class PesananService
 
         DB::transaction(function () use ($p, $target) {
             $p = pesanan::whereKey($p->id)->lockForUpdate()->firstOrFail();
-            $berikut = ['baru' => 'diproses', 'diproses' => 'selesai'][$p->status_pesanan] ?? null;
+            $berikut = [
+                'baru' => 'diproses',
+                'diproses' => 'siap',
+                'siap' => 'selesai',
+            ][$p->status_pesanan] ?? null;
 
             if ($berikut === null || $berikut !== $target) {
                 throw new PesananDitolak("Status {$p->status_pesanan} tidak bisa langsung menjadi {$target}.");

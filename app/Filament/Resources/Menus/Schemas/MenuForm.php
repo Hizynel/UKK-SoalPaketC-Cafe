@@ -34,10 +34,8 @@ class MenuForm
         ->prefix('Rp')
         ->required(),
 
-        Toggle::make('status')
+        Toggle::make('is_active')
         ->label('Aktif')
-        ->formatStateUsing(fn ($state): bool => $state === 'tersedia')
-        ->dehydrateStateUsing(fn (bool $state): string => $state ? 'tersedia' : 'habis')
         ->default(true),
 
         Repeater::make('reseps')
