@@ -82,7 +82,6 @@ class LaporanRiwayatPesanan extends Page implements HasTable
                     ->color(fn ($state) => match ($state) {
                         'baru' => 'warning',
                         'diproses' => 'info',
-                        'siap' => 'primary',
                         'selesai' => 'success',
                         'dibatalkan' => 'danger',
                         default => 'gray',
@@ -99,7 +98,6 @@ class LaporanRiwayatPesanan extends Page implements HasTable
                     ->options([
                         'baru' => 'Baru',
                         'diproses' => 'Diproses',
-                        'siap' => 'Siap',
                         'selesai' => 'Selesai',
                         'dibatalkan' => 'Dibatalkan',
                     ]),

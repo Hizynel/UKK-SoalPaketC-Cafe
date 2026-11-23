@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,7 +14,7 @@ class DatabaseSeeder extends Seeder
             ['nomer_telepon' => '08123456789'],
             [
                 'name' => 'Manager Rani',
-                'password' => 'manager123',
+                'password' => Hash::make('manager123'),
                 'role' => 'manajer',
             ],
         );
@@ -21,8 +22,8 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate(
             ['nomer_telepon' => '081234567899'],
             [
-                'name' => 'Kasir Andi',
-                'password' => 'kasir123',
+                'name' => 'Rina Kasir',
+                'password' => Hash::make('kasir123'),
                 'role' => 'kasir',
             ],
         );
@@ -30,9 +31,10 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate(
             ['nomer_telepon' => '081234567890'],
             [
-                'name' => 'Dedi',
-                'password' => 'Dedi123',
+                'name' => 'Rina Wulandari',
+                'password' => Hash::make('pelanggan123'),
                 'role' => 'pelanggan',
+                'must_change_password' => false,
             ],
         );
     }

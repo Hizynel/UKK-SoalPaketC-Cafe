@@ -1,0 +1,123 @@
+.receipt-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.receipt-paper {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 360px;
+  border-radius: 12px;
+  padding: 24px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  font-family: 'Courier New', Courier, monospace, sans-serif;
+  color: #2b2320;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.receipt-header {
+  text-align: center;
+}
+
+.receipt-shop-name {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #5c3e29;
+}
+
+.receipt-subtitle {
+  margin: 4px 0 10px 0;
+  font-size: 11px;
+  color: #796e68;
+}
+
+.receipt-cut-line {
+  border-top: 1px dashed #c0b2a6;
+  margin: 8px 0;
+}
+
+.receipt-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.meta-line {
+  display: flex;
+  justify-content: space-between;
+}
+
+.receipt-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.receipt-item-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.receipt-calc {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.calc-line {
+  display: flex;
+  justify-content: space-between;
+}
+
+.calc-total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: 16px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #5c3e29;
+}
+
+.receipt-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #635852;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footer-small {
+  font-size: 10px;
+  color: #92857e;
+}
+
+.receipt-close-btn {
+  margin-top: 10px;
+  background-color: #5c3e29;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+

@@ -1,0 +1,39 @@
+.status-badge-pill {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
+}
+
+.badge-tersedia {
+  background-color: #e5f6ee;
+  color: #17834a;
+}
+
+.badge-habis {
+  background-color: #fde8e8;
+  color: #d33c30;
+}
+
+.badge-baru {
+  background-color: #fef5db;
+  color: #b67d0b;
+}
+
+.badge-diproses {
+  background-color: #e6f0fa;
+  color: #1b63bd;
+}
+
+.badge-selesai {
+  background-color: #e5f6ee;
+  color: #17834a;
+}
+
+.badge-dibatalkan {
+  background-color: #fde8e8;
+  color: #d33c30;
+}
+

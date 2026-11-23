@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { IonContent, IonPage } from '@ionic/react';
-import { MenuItem } from '../mockData';
+import { useCafe } from '../context/CafeContext';
+import { AppHeader } from '../components/Header';
+import { StatusBadge } from '../components/StatusBadge';
 import './CustomerMenuPage.css';
 
 interface CustomerMenuPageProps {
-  menus: MenuItem[];
-  onOrderNow: (menu: MenuItem) => void;
-  onLogout: () => void;
+  onSelectMenuToOrder: (menuId: number) => void;
+  onOpenChangePassword: () => void;
 }
 
-const CustomerMenuPage: React.FC<CustomerMenuPageProps> = ({ menus, onOrderNow, onLogout }) => {
+export const CustomerMenuPage: React.FC<CustomerMenuPageProps> = ({
+  onSelectMenuToOrder,
+  onOpenChangePassword,
+}) => {
+  const { menus, isMenuAvailable, currentUser, logout } = useCafe();
   const [filter, setFilter] = useState<'semua' | 'minuman' | 'makanan'>('semua');
 
   const filteredMenus = menus.filter((item) => {
@@ -21,12 +26,29 @@ const CustomerMenuPage: React.FC<CustomerMenuPageProps> = ({ menus, onOrderNow, 
     <IonPage>
       <IonContent fullscreen>
         <div className="mobile-view-wrapper">
-          <header className="page-header">
-            <span className="page-title">Menu Kedai</span>
-            <button type="button" className="header-logout-btn" onClick={onLogout}>
-              Keluar
-            </button>
-          </header>
+          <AppHeader
+            title="Menu Kedai"
+            subtitle={`Halo, ${currentUser?.nama || 'Pelanggan'}`}
+            rightAction={
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button
+                  type="button"
+                  className="header-action-btn"
+                  onClick={onOpenChangePassword}
+                  title="Ganti Password"
+                >
+                  Kunci
+                </button>
+                <button
+                  type="button"
+                  className="header-action-btn"
+                  onClick={logout}
+                >
+                  Keluar
+                </button>
+              </div>
+            }
+          />
 
           {/* Filter Pills */}
           <div className="filter-pills-row">
@@ -52,36 +74,36 @@ const CustomerMenuPage: React.FC<CustomerMenuPageProps> = ({ menus, onOrderNow, 
 
           {/* Menu List */}
           <div className="menu-list-container">
-            {filteredMenus.map((item) => (
-              <div
-                key={item.id}
-                className="menu-card"
-                onClick={() => {
-                  if (item.status === 'tersedia') {
-                    onOrderNow(item);
-                  }
-                }}
-              >
-                <div className="menu-thumb-placeholder">
-                  <span className="thumb-icon">{item.kategori === 'minuman' ? '☕' : '🍽️'}</span>
+            {filteredMenus.map((item) => {
+              const available = isMenuAvailable(item.id);
+              return (
+                <div
+                  key={item.id}
+                  className={`menu-card ${!available ? 'menu-card-disabled' : ''}`}
+                  onClick={() => {
+                    if (available) {
+                      onSelectMenuToOrder(item.id);
+                    } else {
+                      alert(`Maaf, ${item.nama} sedang habis karena stok bahan di dapur tidak mencukupi.`);
+                    }
+                  }}
+                >
+                  <div className="menu-thumb-placeholder">
+                    <span className="thumb-icon">{item.kategori === 'minuman' ? '☕' : '🍽️'}</span>
+                  </div>
+                  <div className="menu-info">
+                    <div className="menu-name">{item.nama}</div>
+                    <div className="menu-price">Rp {item.harga.toLocaleString('id-ID')}</div>
+                  </div>
+                  <div>
+                    <StatusBadge status={available ? 'Tersedia' : 'Habis'} />
+                  </div>
                 </div>
-                <div className="menu-info">
-                  <div className="menu-name">{item.nama}</div>
-                  <div className="menu-price">Rp {item.harga.toLocaleString('id-ID')}</div>
-                </div>
-                <div>
-                  <span className={`status-pill ${item.status === 'tersedia' ? 'badge-tersedia' : 'badge-habis'}`}>
-                    {item.status === 'tersedia' ? 'Tersedia' : 'Habis'}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </IonContent>
     </IonPage>
   );
 };
-
-export default CustomerMenuPage;
-

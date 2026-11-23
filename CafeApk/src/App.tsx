@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { IonApp, setupIonicReact } from '@ionic/react';
-import { INITIAL_MENUS, INITIAL_PESANAN, MenuItem, PesananItem } from './mockData';
-
-import AuthPage from './pages/AuthPage';
-import CustomerMenuPage from './pages/CustomerMenuPage';
-import CustomerOrderPage from './pages/CustomerOrderPage';
-import CustomerHistoryPage from './pages/CustomerHistoryPage';
-import OrderSuccessPage from './pages/OrderSuccessPage';
-import CashierDashboardPage from './pages/CashierDashboardPage';
+import { CafeProvider, useCafe } from './context/CafeContext';
+import { AuthPage } from './auth/AuthPage';
+import { ChangePasswordModal } from './auth/ChangePasswordModal';
+import { CustomerMenuPage } from './pages/CustomerMenuPage';
+import { CustomerOrderPage } from './pages/CustomerOrderPage';
+import { CustomerHistoryPage } from './pages/CustomerHistoryPage';
+import { OrderSuccessPage } from './pages/OrderSuccessPage';
+import { CashierDashboardPage } from './pages/CashierDashboardPage';
+import { CustomerTabs } from './components/CustomerTabs';
+import { Order } from './types';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -18,127 +20,116 @@ import './theme/variables.css';
 
 setupIonicReact();
 
-const App: React.FC = () => {
-  // Authentication & Role State
-  const [userRole, setUserRole] = useState<'guest' | 'pelanggan' | 'kasir'>('pelanggan');
+const MainNavigator: React.FC = () => {
+  const { currentUser, hasActiveBaruOrder } = useCafe();
 
-  // Customer Navigation State
+  // Navigation tab untuk customer
   const [customerTab, setCustomerTab] = useState<'menu' | 'pesan' | 'riwayat'>('menu');
-  const [latestOrder, setLatestOrder] = useState<PesananItem | null>(null);
+  const [selectedMenuQuantities, setSelectedMenuQuantities] = useState<Record<number, number>>({});
+  const [latestCreatedOrder, setLatestCreatedOrder] = useState<Order | null>(null);
 
-  // App Data State
-  const [menus] = useState<MenuItem[]>(INITIAL_MENUS);
-  const [orders, setOrders] = useState<PesananItem[]>(INITIAL_PESANAN);
+  // Modal Ganti Password mandiri atau paksa (forced)
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [isForcedChange, setIsForcedChange] = useState(false);
 
-  const handleLoginSuccess = (role: 'kasir' | 'pelanggan') => {
-    setUserRole(role);
-    setCustomerTab('menu');
-    setLatestOrder(null);
-  };
-
-  const handleLogout = () => {
-    setUserRole('guest');
-    setLatestOrder(null);
-  };
-
-  const handleNewOrder = (newOrder: PesananItem) => {
-    setOrders((prev) => [newOrder, ...prev]);
-    setLatestOrder(newOrder);
-  };
-
-  const handleUpdateOrderStatus = (
-    orderId: number,
-    nextStatus: 'Diproses' | 'Selesai' | 'Dibatalkan'
-  ) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o))
+  // 1. Belum login
+  if (!currentUser) {
+    return (
+      <AuthPage
+        onNeedForceChangePassword={() => {
+          setIsForcedChange(true);
+          setShowChangePasswordModal(true);
+        }}
+      />
     );
-  };
+  }
+
+  // 2. Akun harus ganti password (karena baru direset kasir)
+  if (currentUser.mustChangePassword || (showChangePasswordModal && isForcedChange)) {
+    return (
+      <ChangePasswordModal
+        forced={true}
+        onSuccess={() => {
+          setIsForcedChange(false);
+          setShowChangePasswordModal(false);
+        }}
+      />
+    );
+  }
+
+  // 3. Modal ganti password mandiri
+  if (showChangePasswordModal) {
+    return (
+      <ChangePasswordModal
+        forced={false}
+        onSuccess={() => setShowChangePasswordModal(false)}
+        onCancel={() => setShowChangePasswordModal(false)}
+      />
+    );
+  }
+
+  // 4. Role: Kasir
+  if (currentUser.role === 'kasir') {
+    return <CashierDashboardPage />;
+  }
+
+  // 5. Role: Pelanggan
+  const hasActiveOrder = hasActiveBaruOrder(currentUser.nomorHp);
 
   return (
-    <IonApp>
-      {/* 1. GUEST: LOGIN / DAFTAR */}
-      {userRole === 'guest' && (
-        <AuthPage onLoginSuccess={handleLoginSuccess} />
-      )}
-
-      {/* 2. ROLE: KASIR */}
-      {userRole === 'kasir' && (
-        <CashierDashboardPage
-          orders={orders}
-          menus={menus}
-          onUpdateStatus={handleUpdateOrderStatus}
-          onLogout={handleLogout}
+    <>
+      {/* Jika baru saja membuat pesanan, tampilkan halaman kode sukses unik */}
+      {latestCreatedOrder ? (
+        <OrderSuccessPage
+          order={latestCreatedOrder}
+          onBack={() => {
+            setLatestCreatedOrder(null);
+            setCustomerTab('riwayat');
+          }}
         />
-      )}
-
-      {/* 3. ROLE: PELANGGAN */}
-      {userRole === 'pelanggan' && (
+      ) : (
         <>
-          {latestOrder ? (
-            <OrderSuccessPage
-              order={latestOrder}
-              onBack={() => {
-                setLatestOrder(null);
-                setCustomerTab('riwayat');
+          {customerTab === 'menu' && (
+            <CustomerMenuPage
+              onSelectMenuToOrder={(menuId) => {
+                setSelectedMenuQuantities({ [menuId]: 1 });
+                setCustomerTab('pesan');
               }}
+              onOpenChangePassword={() => setShowChangePasswordModal(true)}
             />
-          ) : (
-            <>
-              {customerTab === 'menu' && (
-                <CustomerMenuPage
-                  menus={menus}
-                  onOrderNow={() => setCustomerTab('pesan')}
-                  onLogout={handleLogout}
-                />
-              )}
-
-              {customerTab === 'pesan' && (
-                <CustomerOrderPage
-                  menus={menus}
-                  onOrderSuccess={handleNewOrder}
-                  onLogout={handleLogout}
-                />
-              )}
-
-              {customerTab === 'riwayat' && (
-                <CustomerHistoryPage
-                  orders={orders}
-                  onLogout={handleLogout}
-                />
-              )}
-
-              {/* Bottom Navigation Bar khas Mobile App */}
-              <div className="senja-tabs">
-                <button
-                  type="button"
-                  className={`tab-btn ${customerTab === 'menu' ? 'active' : ''}`}
-                  onClick={() => setCustomerTab('menu')}
-                >
-                  <span style={{ fontSize: 18 }}>☕</span>
-                  <span>Menu</span>
-                </button>
-                <button
-                  type="button"
-                  className={`tab-btn ${customerTab === 'pesan' ? 'active' : ''}`}
-                  onClick={() => setCustomerTab('pesan')}
-                >
-                  <span style={{ fontSize: 18 }}>📝</span>
-                  <span>Pesan</span>
-                </button>
-                <button
-                  type="button"
-                  className={`tab-btn ${customerTab === 'riwayat' ? 'active' : ''}`}
-                  onClick={() => setCustomerTab('riwayat')}
-                >
-                  <span style={{ fontSize: 18 }}>📜</span>
-                  <span>Riwayat</span>
-                </button>
-              </div>
-            </>
           )}
+
+          {customerTab === 'pesan' && (
+            <CustomerOrderPage
+              initialQuantities={selectedMenuQuantities}
+              onOrderSuccess={(order) => {
+                setLatestCreatedOrder(order);
+                setSelectedMenuQuantities({});
+              }}
+              onGoToHistory={() => setCustomerTab('riwayat')}
+            />
+          )}
+
+          {customerTab === 'riwayat' && <CustomerHistoryPage />}
+
+          {/* Reusable Customer Bottom Navigation */}
+          <CustomerTabs
+            activeTab={customerTab}
+            onChangeTab={setCustomerTab}
+            hasActiveOrder={hasActiveOrder}
+          />
         </>
       )}
+    </>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <IonApp>
+      <CafeProvider>
+        <MainNavigator />
+      </CafeProvider>
     </IonApp>
   );
 };

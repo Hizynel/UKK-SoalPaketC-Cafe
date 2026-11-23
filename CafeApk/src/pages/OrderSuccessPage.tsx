@@ -1,14 +1,14 @@
 import React from 'react';
 import { IonContent, IonPage } from '@ionic/react';
-import { PesananItem } from '../mockData';
+import { Order } from '../types';
 import './OrderSuccessPage.css';
 
 interface OrderSuccessPageProps {
-  order: PesananItem;
+  order: Order;
   onBack: () => void;
 }
 
-const OrderSuccessPage: React.FC<OrderSuccessPageProps> = ({ order, onBack }) => {
+export const OrderSuccessPage: React.FC<OrderSuccessPageProps> = ({ order, onBack }) => {
   const letters = order.kode.split('');
 
   return (
@@ -45,7 +45,7 @@ const OrderSuccessPage: React.FC<OrderSuccessPageProps> = ({ order, onBack }) =>
               </div>
               <div className="details-row">
                 <span className="details-label">Pembayaran</span>
-                <span className="details-val">{order.metode_pembayaran}</span>
+                <span className="details-val">{order.metodePembayaran}</span>
               </div>
               <div className="details-row">
                 <span className="details-label">Total</span>
@@ -58,7 +58,7 @@ const OrderSuccessPage: React.FC<OrderSuccessPageProps> = ({ order, onBack }) =>
 
           <div className="success-footer">
             <button type="button" className="btn-coffee-primary" onClick={onBack}>
-              Kembali
+              Kembali ke Riwayat
             </button>
           </div>
         </div>
@@ -66,6 +66,3 @@ const OrderSuccessPage: React.FC<OrderSuccessPageProps> = ({ order, onBack }) =>
     </IonPage>
   );
 };
-
-export default OrderSuccessPage;
-

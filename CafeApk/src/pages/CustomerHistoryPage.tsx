@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
 import { IonContent, IonPage } from '@ionic/react';
-import { PesananItem } from '../mockData';
+import { useCafe } from '../context/CafeContext';
+import { AppHeader } from '../components/Header';
+import { StatusBadge } from '../components/StatusBadge';
+import { ReceiptModal } from '../components/ReceiptModal';
+import { Order } from '../types';
 import './CustomerHistoryPage.css';
 
-interface CustomerHistoryPageProps {
-  orders: PesananItem[];
-  onLogout: () => void;
-}
-
-const CustomerHistoryPage: React.FC<CustomerHistoryPageProps> = ({ orders, onLogout }) => {
+export const CustomerHistoryPage: React.FC = () => {
+  const { orders, currentUser, updateOrderStatus } = useCafe();
   const [activeFilter, setActiveFilter] = useState<'Semua' | 'Baru' | 'Diproses' | 'Selesai'>('Semua');
+  const [viewReceiptOrder, setViewReceiptOrder] = useState<Order | null>(null);
 
-  const filteredOrders = orders.filter((o) => {
+  // POIN 14: Pelanggan memantau status dan struk pesanannya sendiri;
+  // Pesanan orang lain tidak bisa dibuka (Hanya filter berdasarkan currentUser.nomorHp)
+  const myOrders = orders.filter((o) => o.pelangganHp === currentUser?.nomorHp);
+
+  const filteredOrders = myOrders.filter((o) => {
     if (activeFilter === 'Semua') return true;
     return o.status === activeFilter;
   });
@@ -20,12 +25,10 @@ const CustomerHistoryPage: React.FC<CustomerHistoryPageProps> = ({ orders, onLog
     <IonPage>
       <IonContent fullscreen>
         <div className="mobile-view-wrapper">
-          <header className="page-header">
-            <span className="page-title">Riwayat Pesanan</span>
-            <button type="button" className="header-logout-btn" onClick={onLogout}>
-              Keluar
-            </button>
-          </header>
+          <AppHeader
+            title="Riwayat Pesanan"
+            subtitle={`Akun: ${currentUser?.nama} (${currentUser?.nomorHp})`}
+          />
 
           {/* Filter Pills */}
           <div className="filter-pills-row">
@@ -43,23 +46,23 @@ const CustomerHistoryPage: React.FC<CustomerHistoryPageProps> = ({ orders, onLog
           {/* List Riwayat Card */}
           <div className="history-list-container">
             {filteredOrders.length === 0 ? (
-              <div className="empty-state">Belum ada riwayat pesanan.</div>
+              <div className="empty-state">
+                <div style={{ fontSize: 36, marginBottom: 8 }}>📜</div>
+                <p>Belum ada riwayat pesanan untuk status ini.</p>
+                <span className="privacy-badge">🔒 Terenkripsi Khusus Akun Anda</span>
+              </div>
             ) : (
               filteredOrders.map((order) => {
-                const isDetailed = order.items && order.items.length > 0;
                 return (
                   <div key={order.id} className="history-card">
                     {/* Header Card */}
                     <div className="history-card-header">
                       <div className="history-code-title">{order.kode}</div>
-                      <span className={`status-pill badge-${order.status.toLowerCase()}`}>
-                        {order.status}
-                      </span>
+                      <StatusBadge status={order.status} />
                     </div>
 
                     <div className="history-meta">
-                      {order.meja} · {order.metode_pembayaran}
-                      {order.total && !isDetailed && ` · Rp ${order.total.toLocaleString('id-ID')}`}
+                      {order.meja} · {order.metodePembayaran} · {order.createdAt}
                     </div>
 
                     {/* Timeline stepper jika pesanan aktif / baru */}
@@ -77,41 +80,70 @@ const CustomerHistoryPage: React.FC<CustomerHistoryPageProps> = ({ orders, onLog
                       </div>
                     )}
 
-                    {/* Breakdown Item Pesanan jika ada */}
-                    {isDetailed && (
-                      <div className="history-breakdown">
-                        {order.items.map((item, idx) => (
-                          <div key={idx} className="breakdown-row">
-                            <span>
-                              {item.qty}× {item.nama}
-                            </span>
-                            <span>{(item.qty * item.harga).toLocaleString('id-ID')}</span>
-                          </div>
-                        ))}
-                        <div className="breakdown-row">
-                          <span>Service 5%</span>
-                          <span>{order.service_charge.toLocaleString('id-ID')}</span>
+                    {/* Breakdown Item Pesanan */}
+                    <div className="history-breakdown">
+                      {order.items.map((item, idx) => (
+                        <div key={idx} className="breakdown-row">
+                          <span>
+                            {item.qty}× {item.nama}
+                          </span>
+                          <span>Rp {(item.qty * item.harga).toLocaleString('id-ID')}</span>
                         </div>
-                        <div className="breakdown-row">
-                          <span>Pajak 10%</span>
-                          <span>{order.pajak.toLocaleString('id-ID')}</span>
-                        </div>
-                        <div className="breakdown-divider"></div>
-                        <div className="breakdown-row breakdown-total">
-                          <span>Total</span>
-                          <span>Rp {order.total.toLocaleString('id-ID')}</span>
-                        </div>
+                      ))}
+                      <div className="breakdown-row">
+                        <span>Service 5%</span>
+                        <span>Rp {order.serviceCharge.toLocaleString('id-ID')}</span>
                       </div>
-                    )}
+                      <div className="breakdown-row">
+                        <span>Pajak 10%</span>
+                        <span>Rp {order.pajak.toLocaleString('id-ID')}</span>
+                      </div>
+                      <div className="breakdown-divider"></div>
+                      <div className="breakdown-row breakdown-total">
+                        <span>Total</span>
+                        <span>Rp {order.total.toLocaleString('id-ID')}</span>
+                      </div>
+                    </div>
+
+                    {/* Aksi: Buka Struk Pribadi & Batalkan Jika Baru */}
+                    <div className="history-actions-row">
+                      {/* Poin 14: Buka struk pesanan sendiri */}
+                      <button
+                        type="button"
+                        className="btn-coffee-outline"
+                        style={{ flex: 1, padding: '8px 12px' }}
+                        onClick={() => setViewReceiptOrder(order)}
+                      >
+                        📄 Lihat Struk
+                      </button>
+
+                      {order.status === 'Baru' && (
+                        <button
+                          type="button"
+                          className="btn-cancel-small"
+                          onClick={() => {
+                            if (window.confirm('Batalkan pesanan ini? Stok bahan akan kembali otomatis.')) {
+                              updateOrderStatus(order.id, 'Dibatalkan');
+                            }
+                          }}
+                        >
+                          Batalkan
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })
             )}
           </div>
         </div>
+
+        {/* Modal Struk Mandiri (Poin 14) */}
+        <ReceiptModal
+          order={viewReceiptOrder}
+          onClose={() => setViewReceiptOrder(null)}
+        />
       </IonContent>
     </IonPage>
   );
 };
-
-export default CustomerHistoryPage;

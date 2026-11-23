@@ -7,7 +7,7 @@
     </div>
 @endif
 <div class="mb-5 flex gap-2" id="tabs">
-    @foreach (['semua' => 'Semua', 'baru' => 'Baru', 'diproses' => 'Diproses', 'siap' => 'Siap', 'selesai' => 'Selesai', 'dibatalkan' => 'Dibatalkan'] as $filter => $label)
+    @foreach (['semua' => 'Semua', 'baru' => 'Baru', 'diproses' => 'Diproses', 'selesai' => 'Selesai', 'dibatalkan' => 'Dibatalkan'] as $filter => $label)
         <button data-filter="{{ $filter }}"
                 class="tab rounded-full border border-[#d9cdbf] px-4 py-2 font-semibold {{ $loop->first ? 'bg-[#6f4e37] text-white' : 'bg-white' }}">
             {{ $label }} ({{ $filter === 'semua' ? $pesanan->count() : $pesanan->where('status_pesanan', $filter)->count() }})
@@ -27,7 +27,6 @@
                 $badge = [
                     'baru' => 'bg-[#fdf0d0] text-[#8a5a00]',
                     'diproses' => 'bg-[#dce8fb] text-[#1d4e89]',
-                    'siap' => 'bg-purple-100 text-purple-800',
                     'selesai' => 'bg-[#dcf2e2] text-[#1f6b3a]',
                     'dibatalkan' => 'bg-gray-100 text-gray-600',
                 ];
@@ -50,11 +49,6 @@
                             <button class="rounded-lg border border-[#9b2c1f] px-4 py-2 font-semibold text-[#9b2c1f]">Batalkan</button>
                         </form>
                     @elseif ($status === 'diproses')
-                        <form method="POST" action="{{ route('kasir.siap', $item) }}" class="inline">
-                            @csrf
-                            <button class="rounded-lg bg-purple-700 px-4 py-2 font-semibold text-white">Tandai Siap</button>
-                        </form>
-                    @elseif ($status === 'siap')
                         <form method="POST" action="{{ route('kasir.selesai', $item) }}" class="inline">
                             @csrf
                             <button class="rounded-lg bg-[#1f6b3a] px-4 py-2 font-semibold text-white">Selesaikan</button>
@@ -71,7 +65,7 @@
     </table>
 </div>
 <p class="mt-4 text-sm text-[#6b5645]">
-    Status berubah berjenjang: Baru → Diproses → Siap → Selesai. Pembatalan hanya untuk pesanan Baru dan stok bahan kembali otomatis.
+    Status berubah berjenjang: Baru → Diproses → Selesai. Pembatalan hanya untuk pesanan Baru dan stok bahan kembali otomatis.
 </p>
 
 @endsection

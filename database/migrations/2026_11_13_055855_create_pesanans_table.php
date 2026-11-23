@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('nama_pelanggan');
             $table->integer('nomor_meja');
             $table->string('kode_unik', 8)->unique();
-            $table->enum('status_pesanan', ['baru', 'diproses', 'siap', 'selesai', 'dibatalkan'])->default('baru');
+            $table->enum('status_pesanan', ['baru', 'diproses', 'selesai', 'dibatalkan'])->default('baru');
             $table->enum('metode_pesan', ['tunai', 'qris']);
             $table->decimal('subtotal', 10 , 2);
             $table->decimal('service', 10 , 2);

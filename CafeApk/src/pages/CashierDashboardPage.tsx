@@ -1,34 +1,104 @@
 import React, { useState } from 'react';
 import { IonContent, IonPage } from '@ionic/react';
-import { MenuItem, PesananItem } from '../mockData';
+import { useCafe } from '../context/CafeContext';
+import { StatusBadge } from '../components/StatusBadge';
+import { PriceSummary } from '../components/PriceSummary';
+import { ReceiptModal } from '../components/ReceiptModal';
+import { Order } from '../types';
 import './CashierDashboardPage.css';
 
-interface CashierDashboardPageProps {
-  orders: PesananItem[];
-  menus: MenuItem[];
-  onUpdateStatus: (orderId: number, nextStatus: 'Diproses' | 'Selesai' | 'Dibatalkan') => void;
-  onLogout: () => void;
-}
+export const CashierDashboardPage: React.FC = () => {
+  const {
+    orders,
+    menus,
+    users,
+    bahanBaku,
+    currentUser,
+    logout,
+    updateOrderStatus,
+    createOrder,
+    checkStockAvailability,
+    resetCustomerPasswordByCashier,
+  } = useCafe();
 
-const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
-  orders,
-  onUpdateStatus,
-  onLogout,
-}) => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'input' | 'data' | 'pelanggan'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'input' | 'data' | 'pelanggan' | 'stok'>('dashboard');
+
+  // Input Pesanan Kasir state (default semua qty 0)
+  const [cashierCustName, setCashierCustName] = useState('Pelanggan Meja 3');
+  const [cashierTable, setCashierTable] = useState('Meja 3');
+  const [cashierPayMethod, setCashierPayMethod] = useState<'Tunai' | 'QRIS'>('Tunai');
+  const [cashierQuantities, setCashierQuantities] = useState<Record<number, number>>({});
+
+  // Modal Reset Password Kasir
   const [selectedUserReset, setSelectedUserReset] = useState<string | null>(null);
   const [resetCode, setResetCode] = useState('');
 
-  // Hitung metric
+  // Modal Struk
+  const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
+
+  // Search Akun
+  const [searchUser, setSearchUser] = useState('');
+
+  // Hitung metrik
   const countBaru = orders.filter((o) => o.status === 'Baru').length;
   const countDiproses = orders.filter((o) => o.status === 'Diproses').length;
   const countSelesai = orders.filter((o) => o.status === 'Selesai').length;
 
-  const handleResetPassword = (name: string) => {
-    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-    setResetCode(code);
-    setSelectedUserReset(name);
+  // Kasir Reset Password (Poin 12)
+  const handleTriggerReset = async (hp: string, name: string) => {
+    const res = await resetCustomerPasswordByCashier(hp);
+    if (res.success && res.tempPassword) {
+      setResetCode(res.tempPassword);
+      setSelectedUserReset(name);
+    }
   };
+
+  // Kasir Buat Pesanan (Poin 13: Aturan pesanan & stok sama dengan pesanan kasir)
+  const cashierSelectedItems = Object.entries(cashierQuantities)
+    .filter(([_, qty]) => qty > 0)
+    .map(([id, qty]) => ({ menuId: Number(id), qty }));
+
+  const cashierSubtotal = cashierSelectedItems.reduce((acc, it) => {
+    const m = menus.find((menu) => menu.id === it.menuId);
+    return acc + (m ? m.harga * it.qty : 0);
+  }, 0);
+  const cashierService = Math.round(cashierSubtotal * 0.05);
+  const cashierPajak = Math.round(cashierSubtotal * 0.1);
+  const cashierTotal = cashierSubtotal + cashierService + cashierPajak;
+
+  const stockCheck = checkStockAvailability(cashierSelectedItems);
+
+  const handleCashierSubmitOrder = async () => {
+    if (cashierSelectedItems.length === 0) {
+      alert('Pilih minimal 1 item.');
+      return;
+    }
+    if (!stockCheck.available) {
+      alert(stockCheck.reason || 'Stok bahan tidak mencukupi.');
+      return;
+    }
+
+    const res = await createOrder({
+      pelangganHp: 'walkin-' + Date.now(),
+      pelangganNama: cashierCustName,
+      meja: cashierTable,
+      metodePembayaran: cashierPayMethod,
+      items: cashierSelectedItems,
+    });
+
+    if (res.success) {
+      alert('Pesanan kasir berhasil disimpan!');
+      setActiveTab('dashboard');
+    } else {
+      alert(res.message);
+    }
+  };
+
+  const filteredCustomerAccounts = users.filter(
+    (u) =>
+      u.role === 'pelanggan' &&
+      (u.nama.toLowerCase().includes(searchUser.toLowerCase()) || u.nomorHp.includes(searchUser))
+  );
 
   return (
     <IonPage>
@@ -41,8 +111,8 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
               <span className="brand-sub">Sistem Manajemen Kafe</span>
             </div>
             <div className="cashier-user-badge">
-              <span>Rina · Kasir</span>
-              <button type="button" className="btn-logout-small" onClick={onLogout}>
+              <span>{currentUser?.nama || 'Kasir'}</span>
+              <button type="button" className="btn-logout-small" onClick={logout}>
                 Keluar
               </button>
             </div>
@@ -72,7 +142,13 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
               className={`nav-tab-btn ${activeTab === 'pelanggan' ? 'active' : ''}`}
               onClick={() => setActiveTab('pelanggan')}
             >
-              Akun
+              Akun Pelanggan
+            </button>
+            <button
+              className={`nav-tab-btn ${activeTab === 'stok' ? 'active' : ''}`}
+              onClick={() => setActiveTab('stok')}
+            >
+              Stok Bahan
             </button>
           </div>
 
@@ -106,23 +182,27 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
                         <div className="order-main-info">
                           <div className="order-row-top">
                             <span className="badge-code">{item.kode}</span>
-                            <span className="order-time">{item.waktu}</span>
+                            <span className="order-time">{item.createdAt}</span>
                           </div>
-                          <div className="order-customer">{item.pelanggan} ({item.meja})</div>
-                          <div className="order-amount">Rp {item.total.toLocaleString('id-ID')} · {item.metode_pembayaran}</div>
+                          <div className="order-customer">
+                            {item.pelangganNama} ({item.meja})
+                          </div>
+                          <div className="order-amount">
+                            Rp {item.total.toLocaleString('id-ID')} · {item.metodePembayaran}
+                          </div>
                         </div>
                         <div className="order-action-buttons">
                           <button
                             type="button"
                             className="btn-action btn-process"
-                            onClick={() => onUpdateStatus(item.id, 'Diproses')}
+                            onClick={() => updateOrderStatus(item.id, 'Diproses')}
                           >
                             Proses
                           </button>
                           <button
                             type="button"
                             className="btn-action btn-cancel"
-                            onClick={() => onUpdateStatus(item.id, 'Dibatalkan')}
+                            onClick={() => updateOrderStatus(item.id, 'Dibatalkan')}
                           >
                             Batalkan
                           </button>
@@ -137,7 +217,7 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
             </div>
           )}
 
-          {/* TAB 2: INPUT PESANAN */}
+          {/* TAB 2: INPUT PESANAN KASIR */}
           {activeTab === 'input' && (
             <div className="cashier-tab-content">
               <div className="section-card">
@@ -145,11 +225,21 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
                 <div className="input-form-inner">
                   <div className="form-group">
                     <label className="form-label">Nama Pelanggan</label>
-                    <input type="text" className="form-input" defaultValue="Rina Wulandari" />
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={cashierCustName}
+                      onChange={(e) => setCashierCustName(e.target.value)}
+                    />
                   </div>
+
                   <div className="form-group">
                     <label className="form-label">Nomor Meja (1–10)</label>
-                    <select className="form-input" defaultValue="Meja 3">
+                    <select
+                      className="form-input"
+                      value={cashierTable}
+                      onChange={(e) => setCashierTable(e.target.value)}
+                    >
                       {[...Array(10)].map((_, i) => (
                         <option key={i + 1} value={`Meja ${i + 1}`}>
                           Meja {i + 1}
@@ -157,64 +247,83 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
                       ))}
                     </select>
                   </div>
+
                   <div className="form-group">
                     <label className="form-label">Metode Pembayaran</label>
                     <div className="payment-toggle-group">
-                      <button type="button" className="payment-toggle-btn active">
+                      <button
+                        type="button"
+                        className={`payment-toggle-btn ${cashierPayMethod === 'Tunai' ? 'active' : ''}`}
+                        onClick={() => setCashierPayMethod('Tunai')}
+                      >
                         Tunai
                       </button>
-                      <button type="button" className="payment-toggle-btn">
+                      <button
+                        type="button"
+                        className={`payment-toggle-btn ${cashierPayMethod === 'QRIS' ? 'active' : ''}`}
+                        onClick={() => setCashierPayMethod('QRIS')}
+                      >
                         QRIS
                       </button>
                     </div>
                   </div>
 
+                  {/* Pilih Menu */}
                   <div className="form-group" style={{ marginTop: 8 }}>
                     <label className="form-label">Item Pesanan</label>
-                    <div className="select-qty-row">
-                      <select className="form-input" defaultValue="1" style={{ flex: 1 }}>
-                        <option value="1">Kopi Susu Senja — Rp 22.000</option>
-                        <option value="2">Americano — Rp 18.000</option>
-                        <option value="4">Roti Bakar Cokelat — Rp 20.000</option>
-                      </select>
-                      <input type="number" className="form-input" defaultValue="2" style={{ width: 60, textAlign: 'center' }} />
-                    </div>
+                    {menus.map((m) => (
+                      <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f2e9e1' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: 14 }}>{m.nama}</div>
+                          <div style={{ fontSize: 12, color: '#796e68' }}>Rp {m.harga.toLocaleString('id-ID')}</div>
+                        </div>
+                        <input
+                          type="number"
+                          min="0"
+                          className="form-input"
+                          style={{ width: 64, textAlign: 'center' }}
+                          value={cashierQuantities[m.id] || 0}
+                          onChange={(e) =>
+                            setCashierQuantities((prev) => ({
+                              ...prev,
+                              [m.id]: Math.max(0, parseInt(e.target.value) || 0),
+                            }))
+                          }
+                        />
+                      </div>
+                    ))}
                   </div>
 
                   {/* Stock banner */}
-                  <div className="stock-badge-info">
-                    ✓ Stok bahan mencukupi untuk seluruh item.
+                  <div
+                    className="stock-badge-info"
+                    style={{
+                      backgroundColor: stockCheck.available ? '#e5f6ee' : '#fde8e8',
+                      color: stockCheck.available ? '#17834a' : '#d33c30',
+                    }}
+                  >
+                    {stockCheck.available
+                      ? '✓ Stok bahan mencukupi untuk seluruh item.'
+                      : `✕ ${stockCheck.reason}`}
                   </div>
 
                   {/* Price Summary */}
-                  <div className="price-summary-box">
-                    <div className="summary-row">
-                      <span>Subtotal</span>
-                      <span>Rp 64.000</span>
-                    </div>
-                    <div className="summary-row">
-                      <span>Service charge (5%)</span>
-                      <span>Rp 3.200</span>
-                    </div>
-                    <div className="summary-row">
-                      <span>Pajak (10%)</span>
-                      <span>Rp 6.720</span>
-                    </div>
-                    <div className="summary-divider"></div>
-                    <div className="summary-row summary-total">
-                      <span>Total Akhir</span>
-                      <span>Rp 73.920</span>
-                    </div>
-                  </div>
+                  <PriceSummary
+                    subtotal={cashierSubtotal}
+                    serviceCharge={cashierService}
+                    pajak={cashierPajak}
+                    total={cashierTotal}
+                  />
 
                   <button
                     type="button"
                     className="btn-coffee-primary"
-                    style={{ marginTop: 14 }}
-                    onClick={() => {
-                      alert('Pesanan berhasil disimpan oleh kasir!');
-                      setActiveTab('dashboard');
+                    disabled={!stockCheck.available || cashierSelectedItems.length === 0}
+                    style={{
+                      marginTop: 14,
+                      opacity: !stockCheck.available || cashierSelectedItems.length === 0 ? 0.6 : 1,
                     }}
+                    onClick={handleCashierSubmitOrder}
                   >
                     Simpan Pesanan
                   </button>
@@ -223,7 +332,7 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
             </div>
           )}
 
-          {/* TAB 3: DATA PESANAN / RIWAYAT */}
+          {/* TAB 3: DATA PESANAN / RIWAYAT KASIR */}
           {activeTab === 'data' && (
             <div className="cashier-tab-content">
               <div className="section-card">
@@ -238,15 +347,13 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
                       <div className="order-main-info">
                         <div className="order-row-top">
                           <span className="badge-code">{item.kode}</span>
-                          <span className={`status-pill badge-${item.status.toLowerCase()}`}>
-                            {item.status}
-                          </span>
+                          <StatusBadge status={item.status} />
                         </div>
                         <div className="order-customer">
-                          {item.pelanggan} · {item.meja}
+                          {item.pelangganNama} · {item.meja}
                         </div>
                         <div className="order-amount">
-                          Rp {item.total.toLocaleString('id-ID')} · {item.metode_pembayaran}
+                          Rp {item.total.toLocaleString('id-ID')} · {item.metodePembayaran}
                         </div>
                       </div>
 
@@ -256,14 +363,14 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
                             <button
                               type="button"
                               className="btn-action btn-process"
-                              onClick={() => onUpdateStatus(item.id, 'Diproses')}
+                              onClick={() => updateOrderStatus(item.id, 'Diproses')}
                             >
                               Proses
                             </button>
                             <button
                               type="button"
                               className="btn-action btn-cancel"
-                              onClick={() => onUpdateStatus(item.id, 'Dibatalkan')}
+                              onClick={() => updateOrderStatus(item.id, 'Dibatalkan')}
                             >
                               Batalkan
                             </button>
@@ -273,20 +380,18 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
                           <button
                             type="button"
                             className="btn-action btn-finish"
-                            onClick={() => onUpdateStatus(item.id, 'Selesai')}
+                            onClick={() => updateOrderStatus(item.id, 'Selesai')}
                           >
                             Selesaikan
                           </button>
                         )}
-                        {item.status === 'Selesai' && (
-                          <button
-                            type="button"
-                            className="btn-action btn-receipt"
-                            onClick={() => alert(`Struk ${item.kode} siap dicetak.`)}
-                          >
-                            Lihat Struk
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          className="btn-action btn-receipt"
+                          onClick={() => setReceiptOrder(item)}
+                        >
+                          Lihat Struk
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -295,7 +400,7 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
             </div>
           )}
 
-          {/* TAB 4: AKUN PELANGGAN */}
+          {/* TAB 4: AKUN PELANGGAN (Poin 12: Reset password kasir) */}
           {activeTab === 'pelanggan' && (
             <div className="cashier-tab-content">
               <div className="section-card">
@@ -304,32 +409,63 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
                   <input
                     type="text"
                     className="form-input"
+                    value={searchUser}
+                    onChange={(e) => setSearchUser(e.target.value)}
                     placeholder="Cari nama atau nomor HP..."
                   />
                 </div>
 
                 <div className="customer-acc-list">
-                  {[
-                    { name: 'Rina Wulandari', hp: '081234567890', date: '02 Nov 2026' },
-                    { name: 'Dimas Pratama', hp: '085711223344', date: '03 Nov 2026' },
-                    { name: 'Sari Anggraini', hp: '082198765432', date: '05 Nov 2026' },
-                    { name: 'Budi Santoso', hp: '081377889900', date: '06 Nov 2026' },
-                    { name: 'Ayu Lestari', hp: '087855443322', date: '08 Nov 2026' },
-                  ].map((cust, i) => (
-                    <div key={i} className="customer-acc-item">
+                  {filteredCustomerAccounts.map((cust) => (
+                    <div key={cust.id} className="customer-acc-item">
                       <div className="customer-acc-info">
-                        <div className="customer-acc-name">{cust.name}</div>
+                        <div className="customer-acc-name">
+                          {cust.nama}{' '}
+                          {cust.mustChangePassword && (
+                            <span style={{ fontSize: 11, color: '#b67d0b', fontWeight: 600 }}>
+                              (Wajib Ganti Password)
+                            </span>
+                          )}
+                        </div>
                         <div className="customer-acc-sub">
-                          {cust.hp} · Terdaftar: {cust.date}
+                          {cust.nomorHp} · Terdaftar: {cust.registeredAt}
                         </div>
                       </div>
                       <button
                         type="button"
                         className="btn-reset-pwd"
-                        onClick={() => handleResetPassword(cust.name)}
+                        onClick={() => handleTriggerReset(cust.nomorHp, cust.nama)}
                       >
                         Reset Password
                       </button>
+                    </div>
+                  ))}
+                  {filteredCustomerAccounts.length === 0 && (
+                    <div className="empty-notice">Tidak ada data pelanggan ditemukan.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: STOK BAHAN BAKU DAPUR (Poin 13) */}
+          {activeTab === 'stok' && (
+            <div className="cashier-tab-content">
+              <div className="section-card">
+                <h3 className="section-title">Stok Bahan Baku Dapur</h3>
+                <p className="status-flow-hint">
+                  Stok otomatis berkurang saat pesanan dibuat dan otomatis kembali jika pesanan <b>Baru</b> dibatalkan.
+                </p>
+                <div className="customer-acc-list">
+                  {bahanBaku.map((b) => (
+                    <div key={b.id} className="customer-acc-item">
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{b.nama}</div>
+                        <div style={{ fontSize: 12, color: '#796e68' }}>Satuan: {b.satuan}</div>
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: 16, color: b.stok === 0 ? '#d33c30' : '#17834a' }}>
+                        {b.stok} {b.satuan}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -337,7 +473,7 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
             </div>
           )}
 
-          {/* POPUP MODAL RESET PASSWORD */}
+          {/* POPUP MODAL RESET PASSWORD (Poin 12) */}
           {selectedUserReset && (
             <div className="modal-backdrop">
               <div className="modal-content-card">
@@ -356,11 +492,11 @@ const CashierDashboardPage: React.FC<CashierDashboardPageProps> = ({
               </div>
             </div>
           )}
+
+          {/* MODAL STRUK KASIR */}
+          <ReceiptModal order={receiptOrder} onClose={() => setReceiptOrder(null)} />
         </div>
       </IonContent>
     </IonPage>
   );
 };
-
-export default CashierDashboardPage;
-

@@ -122,6 +122,10 @@
   color: #17834a;
 }
 
+.color-purple {
+  color: #7e22ce;
+}
+
 /* Section Card */
 .section-card {
   background-color: #ffffff;
@@ -217,6 +221,11 @@
 
 .btn-finish {
   background-color: #17834a;
+  color: #ffffff;
+}
+
+.btn-ready {
+  background-color: #7e22ce;
   color: #ffffff;
 }
 

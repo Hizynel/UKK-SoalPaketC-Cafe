@@ -156,8 +156,7 @@ class PesananService
             $p = pesanan::whereKey($p->id)->lockForUpdate()->firstOrFail();
             $berikut = [
                 'baru' => 'diproses',
-                'diproses' => 'siap',
-                'siap' => 'selesai',
+                'diproses' => 'selesai',
             ][$p->status_pesanan] ?? null;
 
             if ($berikut === null || $berikut !== $target) {
